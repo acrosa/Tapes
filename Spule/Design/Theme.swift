@@ -130,7 +130,7 @@ enum Palette {
 }
 
 enum Typo {
-    /// Geist (Vercel, SIL Open Font License) is bundled in `Spule/Fonts`.
+    /// Geist Mono (Vercel, SIL Open Font License) is bundled in `Spule/Fonts`.
     /// Call once at launch, before any text is drawn.
     static func registerFonts() {
         for url in Bundle.main.urls(forResourcesWithExtension: "otf", subdirectory: nil) ?? [] {
@@ -138,22 +138,22 @@ enum Typo {
         }
     }
 
-    private static func geist(_ weight: String, _ size: CGFloat) -> Font {
-        .custom("Geist-\(weight)", fixedSize: size).monospacedDigit()
+    private static func mono(_ weight: String, _ size: CGFloat) -> Font {
+        .custom("GeistMono-\(weight)", fixedSize: size)
     }
 
     /// The tape counter.
-    static let counter = TypeSpec(font: geist("Light", 40), lineHeight: 48, tracking: -0.8)
+    static let counter = TypeSpec(font: mono("Light", 40), lineHeight: 48, tracking: -2)
     /// Numerals on keys.
-    static let numeral = TypeSpec(font: geist("Medium", 17), lineHeight: 24, tracking: -0.2)
+    static let numeral = TypeSpec(font: mono("Medium", 17), lineHeight: 24, tracking: 0)
     /// Display status words, uppercase.
-    static let status = TypeSpec(font: geist("Medium", 12), lineHeight: 16, tracking: 0.6)
+    static let status = TypeSpec(font: mono("Medium", 12), lineHeight: 16, tracking: 0.2)
     /// Display secondary line.
-    static let caption = TypeSpec(font: geist("Regular", 12), lineHeight: 16, tracking: 0)
+    static let caption = TypeSpec(font: mono("Regular", 12), lineHeight: 16, tracking: -0.2)
     /// Faceplate legends, lowercase.
-    static let legend = TypeSpec(font: geist("Regular", 11), lineHeight: 16, tracking: 0.1)
+    static let legend = TypeSpec(font: mono("Regular", 11), lineHeight: 16, tracking: -0.2)
     /// Scale numerals, drawn in Canvas.
-    static let scale = geist("Regular", 9)
+    static let scale = mono("Regular", 9)
 }
 
 enum Motion {

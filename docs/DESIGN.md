@@ -60,7 +60,7 @@ hangs from the top, so every edge is on the baseline grid, the dial's included.
 **Regular** (two panes, top-aligned): the left pane (7 of 12 columns, or 4 of 8) holds header, display,
 scale, dial and transport. The right pane holds the control row and four channel strips that run the
 full height. The control row divides the pane into the same twelve parts, so speed sits over strip 1,
-tempo over strip 2, and the three keys over strips 3 and 4.
+tempo over strip 2, and the three keys over strips 3 and 4. The status bar is hidden in this layout: on iPad it prints the app's name at the top left, and the faceplate carries no title.
 
 **Landscape** (compact height, an iPhone on its side). Four row **bands** of equal height, 16pt apart,
 are shared by every pane, so parts in different panes have the same top and bottom edges. A band is
@@ -82,17 +82,18 @@ Layout work is checked against it on all three layouts.
 
 ## Type
 
-Geist (Vercel) throughout: a plain, geometric grotesque in the Swiss line that Braun's Akzidenz-Grotesk belongs to.
-Tabular figures everywhere. Light, Regular and Medium are used; the files (and Bold, unused for now) are bundled in `Spule/Fonts` with their SIL Open Font License and
-registered at launch by `Typo.registerFonts()`. Adding a weight means adding its file there.
+Geist Mono (Vercel) throughout: every character the same width, like the print on a meter or a
+typewritten label. Figures never shift as they change. Light, Regular and Medium are bundled in
+`Spule/Fonts` with their SIL Open Font License and registered at launch by `Typo.registerFonts()`.
+(The proportional Geist files are still in the folder from before the switch and are not used.)
 
 | Token | Face | Size / line | Tracking | Use |
 | --- | --- | --- | --- | --- |
-| `counter` | Light | 40 / 48 | −0.8 | tape counter |
-| `numeral` | Medium | 17 / 24 | −0.2 | track numbers |
-| `status` | Medium | 12 / 16 | +0.6 | display state, uppercase |
-| `caption` | Regular | 12 / 16 | 0 | display second line, header keys |
-| `legend` | Regular | 11 / 16 | +0.1 | faceplate legends, lowercase |
+| `counter` | Light | 40 / 48 | −2 | tape counter |
+| `numeral` | Medium | 17 / 24 | 0 | track numbers |
+| `status` | Medium | 12 / 16 | +0.2 | display state, uppercase |
+| `caption` | Regular | 12 / 16 | −0.2 | display second line, header keys |
+| `legend` | Regular | 11 / 16 | −0.2 | faceplate legends, lowercase |
 | `scale` | Regular | 9 | — | scale numerals (Canvas) |
 
 `.rhythm(spec)` sets the font and fixes the line box to the spec's line height, so text keeps the

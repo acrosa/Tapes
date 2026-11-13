@@ -34,6 +34,8 @@ struct FaceplateView: View {
         }
         .background(Palette.surface.ignoresSafeArea())
         .preferredColorScheme(storedTheme.isEmpty ? nil : theme.scheme)
+        // On iPad the status bar prints the app's name at the top left. The faceplate carries no title.
+        .statusBarHidden(widthClass == .regular && heightClass == .regular)
         .sheet(isPresented: $showsLibrary) { LibrarySheet() }
         .sheet(item: $recorder.exportItem) { item in
             ShareSheet(url: item.url)

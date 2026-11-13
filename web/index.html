@@ -8,10 +8,9 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="description" content="Tapes is a four-track tape recorder for iPhone and iPad. One screen, no menus.">
 <link rel="icon" href="img/icon.png">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500&family=Geist+Mono:wght@400&display=swap">
 <style>
-  /* Layout: one 12-column sheet, 4px baseline. The hero is the appliance itself: a display
-     window and a dial you can turn. Everything below is print on the same faceplate. */
+  /* Layout: one 12-column sheet on a 4px baseline, the same grid the app is built on. */
   :root {
     --surface: #ECEAE4;
     --key: #F7F6F2;
@@ -29,6 +28,7 @@
     --shot-light: block;
     --shot-dark: none;
     --font: "Geist", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    --mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
     --u: 4px;
   }
   @media (prefers-color-scheme: dark) {
@@ -51,6 +51,7 @@
   * { box-sizing: border-box; }
   [hidden] { display: none !important; }
   body {
+    position: relative;
     margin: 0;
     background: var(--surface);
     color: var(--ink);
@@ -58,37 +59,45 @@
     font-variant-numeric: tabular-nums;
     -webkit-font-smoothing: antialiased;
   }
+  h1, h2, h3, p, figure { margin: 0; }
+
+  /* The grid, after the app's GridKit: twelve columns and rows 8px apart.
+     Wide: margin 40, gutter 24. Under 900px: the app's phone grid, margin 24, gutter 16.
+     Every block starts and ends on a column edge. Every line height, gap and block height is a
+     multiple of 8, pictures included, so text in neighbouring columns shares its lines. */
+  :root { --margin: 40px; --gutter: 24px; }
   .sheet {
-    max-width: 1088px;
+    max-width: 1280px;
     margin: 0 auto;
-    padding-block: calc(var(--u) * 6) calc(var(--u) * 12);
-    padding-left: max(24px, env(safe-area-inset-left, 0px));
-    padding-right: max(24px, env(safe-area-inset-right, 0px));
+    padding-block: 24px 96px;
+    padding-left: max(var(--margin), env(safe-area-inset-left, 0px));
+    padding-right: max(var(--margin), env(safe-area-inset-right, 0px));
     display: flex;
     flex-direction: column;
-    gap: calc(var(--u) * 24);
+    gap: 96px;
   }
-  h1, h2, h3, p { margin: 0; }
+  .row { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--gutter); }
+  .row > * { min-width: 0; }
+  .sub { display: grid; grid-template-columns: subgrid; grid-column: 1 / -1; }
+
   .legend { font-size: 12px; line-height: 16px; letter-spacing: 0.01em; color: var(--ink-2); }
 
   /* Header */
-  .bar { display: flex; justify-content: space-between; align-items: center; height: 32px; }
-  .mark { font-weight: 500; font-size: 15px; letter-spacing: -0.02em; }
+  .bar { height: 32px; align-items: center; }
+  .mark { grid-column: span 6; font-weight: 500; font-size: 15px; line-height: 32px; letter-spacing: -0.02em; }
 
   /* Hero */
-  .hero { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 24px; row-gap: 48px; align-items: center; margin-top: calc(var(--u) * -8); }
-  .pitch { grid-column: span 6; display: flex; flex-direction: column; gap: 24px; min-width: 0; }
-  .pitch h1 { font-weight: 300; font-size: clamp(40px, 6vw, 64px); line-height: 1.05; letter-spacing: -0.035em; text-wrap: balance; }
-  .pitch p { font-size: 18px; line-height: 28px; color: var(--ink-2); max-width: 30em; }
+  .hero { row-gap: 48px; align-items: start; }
+  .pitch { grid-column: 1 / span 7; display: flex; flex-direction: column; gap: 24px; padding-top: 48px; }
+  .pitch h1 { font-weight: 300; font-size: 88px; line-height: 96px; letter-spacing: -0.04em; text-wrap: balance; }
+  .pitch p { font-size: 20px; line-height: 32px; color: var(--ink-2); }
   .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 8px; }
-  /* Black with a grey edge and white print in both themes, after Apple's preferred black badge. */
   .store {
-    display: flex; align-items: center; gap: 10px; height: 48px; padding: 0 18px 0 12px; border-radius: 10px;
-    background: #000; color: #fff; box-shadow: inset 0 0 0 1px #A6A6A6;
+    display: flex; align-items: center; height: 48px; padding: 0 20px; border-radius: 10px;
+    color: var(--ink); box-shadow: inset 0 0 0 1px var(--hairline);
   }
-  .store svg { display: block; flex: none; }
-  .store span { display: flex; flex-direction: column; font-weight: 500; font-size: 16px; line-height: 20px; letter-spacing: -0.01em; }
-  .store small { font-weight: 400; font-size: 10px; line-height: 12px; letter-spacing: 0.01em; color: #fff; }
+  .store span { display: flex; flex-direction: column; font-size: 15px; line-height: 20px; letter-spacing: -0.01em; }
+  .store small { font-size: 10px; line-height: 12px; letter-spacing: 0.01em; color: var(--ink-2); }
   .source {
     display: flex; align-items: center; height: 48px; padding: 0 20px; border-radius: 10px;
     font-size: 15px; line-height: 20px; letter-spacing: -0.01em; color: var(--ink); text-decoration: none;
@@ -96,10 +105,10 @@
   }
   .source:hover { box-shadow: inset 0 0 0 1px var(--ink-2); }
   .source:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
-  .lamp { width: 8px; height: 8px; border-radius: 50%; background: var(--lamp); box-shadow: 0 0 8px var(--lamp); flex: none; }
 
-  .unit { grid-column: 8 / span 5; display: flex; flex-direction: column; align-items: center; gap: 24px; min-width: 0; }
-  .picker { display: flex; gap: 24px; }
+  /* The device sits on the last columns: the phone on three, the iPad on four. Both end on column 12. */
+  .unit { grid-column: 9 / span 4; display: grid; grid-template-columns: subgrid; row-gap: 16px; align-content: start; }
+  .picker { grid-column: 1 / -1; justify-self: end; display: flex; gap: 24px; height: 40px; }
   .picker button {
     font: 400 12px/16px var(--font); letter-spacing: 0.01em; color: var(--ink-2); background: none;
     border: 0; padding: 12px 0; display: flex; align-items: center; gap: 8px; cursor: pointer;
@@ -109,26 +118,34 @@
   .picker button:focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; border-radius: 4px; }
   .picker i { width: 6px; height: 6px; border-radius: 50%; background: var(--recess); flex: none; }
   .picker button[aria-selected="true"] i { background: var(--ink); }
-  .stage { display: flex; align-items: center; justify-content: center; width: 100%; min-height: 560px; }
-  .stage img { width: auto; height: auto; max-width: 100%; max-height: 560px; box-shadow: 0 0 0 0.5px var(--hairline), 0 16px 40px -16px var(--lift); }
+  .stage { grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; }
+  .stage .phone, .stage .pad { container-type: inline-size; }
+  .stage img { width: 100%; object-fit: cover; box-shadow: 0 0 0 0.5px var(--hairline), 0 16px 40px -16px var(--lift); }
+  .stage img { display: block; }
   .stage .light { display: var(--shot-light); }
   .stage .dark { display: var(--shot-dark); }
-  .stage .phone img { border-radius: 36px; }
-  .stage .pad img { border-radius: 20px; }
+  .stage .phone { grid-column: 2 / span 3; }
+  .stage .pad { grid-column: 1 / span 4; }
+  .stage .phone img { height: round(down, calc(100cqw * 1300 / 598), 8px); border-radius: 13% / 6%; }
+  .stage .pad img { height: round(down, calc(100cqw * 1500 / 1034), 8px); border-radius: 4.5% / 3.1%; }
 
-  /* Features */
-  .features { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 48px 24px; }
-  .features h3 { font-weight: 500; font-size: 16px; line-height: 24px; letter-spacing: -0.01em; }
-  .features p { color: var(--ink-2); margin-top: 8px; }
+  /* What it is for */
+  .features { row-gap: 48px; }
+  .features > div { grid-column: span 4; }
+  .features h3 { font-weight: 500; font-size: 22px; line-height: 32px; letter-spacing: -0.025em; }
+  .features p { font-size: 15px; line-height: 24px; color: var(--ink-2); margin-top: 8px; }
+
+  /* Section heads */
+  .intro { grid-column: 1 / span 6; display: flex; flex-direction: column; gap: 8px; }
+  .intro h2 { font-weight: 300; font-size: 32px; line-height: 40px; letter-spacing: -0.03em; }
+  .intro p { color: var(--ink-2); }
+  .plug, .finishes { row-gap: 32px; }
+  .plug > .legend { grid-column: 1 / -1; }
 
   /* Setups */
-  .plug { display: flex; flex-direction: column; gap: 32px; }
-  .plug h2 { font-weight: 300; font-size: 32px; line-height: 40px; letter-spacing: -0.03em; }
-  .intro { display: flex; flex-direction: column; gap: 8px; max-width: 34em; }
-  .intro p { color: var(--ink-2); }
-  .setups { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
-  .setups figure { background: var(--recess); border-radius: 12px; padding: 24px; gap: 16px; }
-  .setups svg { display: block; width: 100%; height: auto; }
+  .setups figure { grid-column: span 6; background: var(--recess); border-radius: 12px; padding: 24px; display: flex; flex-direction: column; gap: 16px; }
+  .setups .frame { container-type: inline-size; }
+  .setups svg { display: block; width: 100%; height: round(down, calc(100cqw * 240 / 440), 8px); }
   .setups .part { fill: var(--key); stroke: var(--ink); stroke-width: 1.25; }
   .setups .knob { fill: var(--key); stroke: var(--ink); stroke-width: 1.25; }
   .setups .sunk { fill: var(--recess); stroke: var(--ink); stroke-width: 1.25; }
@@ -137,49 +154,71 @@
   .setups .signal { fill: none; stroke: var(--signal); stroke-width: 2; stroke-linecap: round; }
   .setups .head, .setups .dot { fill: var(--signal); stroke: none; }
   .setups .lit { fill: var(--lamp); stroke: none; }
-  .setups text { font: 400 11px var(--font); fill: var(--ink-2); stroke: none; }
+  .setups text { font: 400 10px var(--mono); fill: var(--ink-2); stroke: none; }
+  .setups figcaption { font-family: var(--mono); letter-spacing: 0; }
 
   /* Finishes */
-  .finishes { display: flex; flex-direction: column; gap: 32px; }
-  .finishes h2 { font-weight: 300; font-size: 32px; line-height: 40px; letter-spacing: -0.03em; }
-  .shots { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
-  figure { margin: 0; display: flex; flex-direction: column; gap: 12px; }
-  figure img { display: block; width: 100%; height: auto; border-radius: clamp(20px, 4vw, 40px); box-shadow: 0 0 0 0.5px var(--hairline), 0 12px 32px -12px var(--lift); }
+  .shots figure { grid-column: span 4; display: flex; flex-direction: column; gap: 16px; }
+  .shots .frame { container-type: inline-size; }
+  .shots img { display: block; width: 100%; height: round(down, calc(100cqw * 1300 / 598), 8px); object-fit: cover; border-radius: 13% / 6%; box-shadow: 0 0 0 0.5px var(--hairline), 0 12px 32px -12px var(--lift); }
 
-  footer { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; border-top: 0.5px solid var(--hairline); padding-top: 24px; }
+  footer { box-shadow: inset 0 0.5px 0 var(--hairline); padding-top: 24px; }
+  footer { row-gap: 8px; }
+  footer .legend { grid-column: 1 / -1; }
 
-  @media (max-width: 820px) {
-    .sheet { gap: calc(var(--u) * 18); }
-    .hero { margin-top: 0; }
-    .pitch, .unit { grid-column: 1 / -1; }
-    .features { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .setups { grid-template-columns: minmax(0, 1fr); }
+  /* The grid itself, for checking. Press G, or open the page with #grid. */
+  .gridlines { position: fixed; inset: 0; pointer-events: none; z-index: 20; }
+  .gridlines .row { max-width: 1280px; height: 100%; margin: 0 auto;
+    padding-left: max(var(--margin), env(safe-area-inset-left, 0px)); padding-right: max(var(--margin), env(safe-area-inset-right, 0px)); }
+  .gridlines i { background: color-mix(in srgb, var(--signal) 10%, transparent); }
+  .rowlines { position: absolute; inset: 0; pointer-events: none; z-index: 19;
+    background-image: linear-gradient(to bottom, color-mix(in srgb, var(--signal) 55%, transparent) 1px, transparent 1px),
+                      linear-gradient(to bottom, color-mix(in srgb, var(--signal) 22%, transparent) 1px, transparent 1px);
+    background-size: 100% 24px, 100% 8px; }
+
+  @media (max-width: 1179px) {
+    .pitch h1 { font-size: 68px; line-height: 72px; }
   }
-  @media (max-width: 480px) {
-    .stage { min-height: 0; }
-    .features { grid-template-columns: minmax(0, 1fr); gap: 32px; }
-    .shots { gap: 12px; }
+  @media (max-width: 899px) {
+    :root { --margin: 24px; --gutter: 16px; }
+    .sheet { gap: 72px; }
+    .pitch { grid-column: 1 / -1; padding-top: 24px; }
+    .pitch h1 { font-size: 56px; line-height: 64px; }
+    .unit { grid-column: 1 / -1; }
+    .picker { justify-self: center; }
+    .stage .phone { grid-column: 4 / span 6; }
+    .stage .pad { grid-column: 3 / span 8; }
+    .features > div { grid-column: span 6; }
+    .intro { grid-column: 1 / -1; }
+    .setups figure { grid-column: 1 / -1; }
+  }
+  @media (max-width: 599px) {
+    .pitch h1 { font-size: 44px; line-height: 48px; }
+    .pitch p { font-size: 18px; line-height: 24px; }
+    .stage .phone { grid-column: 3 / span 8; }
+    .stage .pad { grid-column: 1 / -1; }
+    .features > div { grid-column: 1 / -1; }
+    .features { row-gap: 32px; }
   }
 </style>
 <!--/head-->
 </head>
 <body>
 <!--body-->
+<div class="rowlines" id="rowlines" hidden aria-hidden="true"></div>
+<div class="gridlines" id="gridlines" hidden aria-hidden="true"><div class="row"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
 <div class="sheet">
 
-  <header class="bar">
+  <header class="bar row">
     <span class="mark">tapes</span>
   </header>
 
-  <section class="hero">
+  <section class="hero row">
     <div class="pitch">
       <h1>A four-track tape recorder for iPhone and iPad.</h1>
       <p>One screen, no menus. Turn the dial to move the tape.</p>
       <div class="actions">
         <div class="store" role="img" aria-label="Coming soon to the App Store">
-          <svg viewBox="0 0 32 32" width="28" height="28" aria-hidden="true">
-            <path d="M17.3 8.2 10.4 20.2M8.9 22.8l-1.1 1.9M14.7 8.2l9.3 16.5M5.6 20.2h12M21.6 20.2h4.8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>
-          </svg>
           <span><small>Coming soon</small>App Store</span>
         </div>
         <a class="source" href="https://github.com/acrosa/Tapes">Get the source</a>
@@ -204,7 +243,7 @@
     </div>
   </section>
 
-  <section class="features" aria-label="What it is for">
+  <section class="features row" aria-label="What it is for">
     <div>
       <h3>Catch an idea</h3>
       <p>Open it, press record, play. It’s saved when you stop.</p>
@@ -231,14 +270,14 @@
     </div>
   </section>
 
-  <section class="plug">
+  <section class="plug row">
     <div class="intro">
       <h2>Plug things in</h2>
       <p>Tapes records from whatever input your iPhone or iPad is using. Connect USB audio gear and that becomes the input.</p>
     </div>
-    <div class="setups">
+    <div class="setups sub">
       <figure>
-        <svg viewBox="0 0 440 240" role="img" aria-label="A synth connected to an iPhone with one USB-C cable.">
+        <div class="frame"><svg viewBox="0 0 440 240" role="img" aria-label="A synth connected to an iPhone with one USB-C cable.">
           <rect class="part" x="16" y="88" width="204" height="84" rx="8"/>
           <rect class="sunk" x="28" y="100" width="56" height="20" rx="4"/>
           <circle class="knob" cx="108" cy="110" r="8"/><circle class="knob" cx="136" cy="110" r="8"/><circle class="knob" cx="164" cy="110" r="8"/>
@@ -251,11 +290,11 @@
           <circle class="sunk" cx="377" cy="128" r="34"/><circle class="knob" cx="377" cy="128" r="29"/><circle class="dot" cx="377" cy="107" r="2.5"/>
           <path class="line" d="M342 180h70M342 196h70M342 212h70" opacity="0.5"/>
           <text x="118" y="196" text-anchor="middle">synth or drum machine</text>
-        </svg>
+        </svg></div>
         <figcaption class="legend">Straight in. Gear with USB audio needs one cable, and you listen on its headphone jack.</figcaption>
       </figure>
       <figure>
-        <svg viewBox="0 0 440 240" role="img" aria-label="A microphone connected to a USB audio interface, the interface connected to an iPhone, and headphones plugged into the interface.">
+        <div class="frame"><svg viewBox="0 0 440 240" role="img" aria-label="A microphone connected to a USB audio interface, the interface connected to an iPhone, and headphones plugged into the interface.">
           <rect class="part" x="22" y="92" width="28" height="48" rx="14"/>
           <path class="line" d="M28 108h16M28 116h16M28 124h16"/><path class="line" d="M36 140v24M24 164h24"/>
           <path class="signal" d="M50 116H108"/><path class="head" d="M108 111l9 5-9 5z"/>
@@ -273,27 +312,28 @@
           <rect class="glass" x="342" y="48" width="70" height="26" rx="5"/>
           <circle class="sunk" cx="377" cy="128" r="34"/><circle class="knob" cx="377" cy="128" r="29"/><circle class="dot" cx="377" cy="107" r="2.5"/>
           <path class="line" d="M342 180h70M342 196h70M342 212h70" opacity="0.5"/>
-        </svg>
+        </svg></div>
         <figcaption class="legend">Through an interface. For a mic or a guitar. Listen on headphones plugged into the interface.</figcaption>
       </figure>
     </div>
     <p class="legend">Tracks are mono, so a stereo source is mixed to one channel.</p>
   </section>
 
-  <section class="finishes">
+  <section class="finishes row">
     <div class="intro">
       <h2>Three finishes</h2>
       <p>Light, Dark and Green. Orange means recording. Green means on.</p>
     </div>
-    <div class="shots">
-      <figure><img src="img/iphone-light.png" width="598" height="1300" alt="Tapes in the Light finish: display, tape scale, two thumbwheels, three keys, the dial, four track keys and the transport."><figcaption class="legend">Light</figcaption></figure>
-      <figure><img src="img/iphone-dark.png" width="598" height="1300" alt="The same screen in the Dark finish."><figcaption class="legend">Dark</figcaption></figure>
-      <figure><img src="img/iphone-green.png" width="598" height="1300" alt="The same screen in the Green finish: a grey-green body with putty-coloured keys and dial."><figcaption class="legend">Green</figcaption></figure>
+    <div class="shots sub">
+      <figure><div class="frame"><img src="img/iphone-light.png" width="598" height="1300" alt="Tapes in the Light finish: display, tape scale, two thumbwheels, three keys, the dial, four track keys and the transport."></div><figcaption class="legend">Light</figcaption></figure>
+      <figure><div class="frame"><img src="img/iphone-dark.png" width="598" height="1300" alt="The same screen in the Dark finish."></div><figcaption class="legend">Dark</figcaption></figure>
+      <figure><div class="frame"><img src="img/iphone-green.png" width="598" height="1300" alt="The same screen in the Green finish: a grey-green body with putty-coloured keys and dial."></div><figcaption class="legend">Green</figcaption></figure>
     </div>
   </section>
 
-  <footer>
-    <span class="legend">Tapes. iOS 18 or later.</span>
+  <footer class="row">
+    <p class="legend">Requires iOS 18 or iPadOS 18 or later.</p>
+    <p class="legend">iPhone, iPad and App Store are trademarks of Apple Inc. Tapes is not affiliated with Apple.</p>
   </footer>
 </div>
 
@@ -314,6 +354,14 @@
     });
   });
   pick(0);
+
+  var lines = document.getElementById("gridlines"), rows = document.getElementById("rowlines");
+  function sync() { lines.hidden = rows.hidden = location.hash !== "#grid"; }
+  window.addEventListener("hashchange", sync);
+  document.addEventListener("keydown", function (e) {
+    if ((e.key === "g" || e.key === "G") && !e.metaKey && !e.ctrlKey && !e.altKey) lines.hidden = rows.hidden = !lines.hidden;
+  });
+  sync();
 })();
 </script>
 <!--/body-->

@@ -40,7 +40,7 @@ Debug launch arguments: `-seedDemoTape` fills an empty tape with synthetic notes
 | `Spule/Model/Recorder.swift` | The one `@Observable` model. Every control action is a method here. |
 | `Spule/Model/Tape.swift` | `TapeMeta` and `TapeStore` (disk format). |
 | `Spule/Design/Theme.swift` | All tokens: `Palette`, `Typo`, `Motion`, `Haptics`. |
-| `Spule/Fonts` | Geist, four weights, with its Open Font License. Registered at launch. |
+| `Spule/Fonts` | Geist Mono (in use) and Geist, with the Open Font License. Registered at launch. |
 | `Spule/Views` | The faceplate and its parts. |
 | `web` | The landing page: one static `index.html` and its images. No build step. |
 | `SpuleUITests` | End-to-end tests that drive the app through its controls on the seeded demo tape. A change to a control's behaviour needs its test changed or added here. |
