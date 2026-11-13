@@ -3,6 +3,8 @@ import SwiftUI
 @main
 struct SpuleApp: App {
     @State private var recorder = Recorder()
+    @State private var tilt = Tilt()
+    @Environment(\.scenePhase) private var phase
 
     init() {
         Typo.registerFonts()
@@ -12,6 +14,10 @@ struct SpuleApp: App {
         WindowGroup {
             FaceplateView()
                 .environment(recorder)
+                .environment(tilt)
+                .onChange(of: phase, initial: true) { _, now in
+                    if now == .active { tilt.start() } else { tilt.stop() }
+                }
                 .persistentSystemOverlays(.hidden)
                 #if DEBUG
                 .task {

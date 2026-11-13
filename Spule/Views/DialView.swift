@@ -6,6 +6,7 @@ import GridKit
 /// Double-tap returns to the start.
 struct DialView: View {
     @Environment(Recorder.self) private var recorder
+    @Environment(Tilt.self) private var tilt
 
     @State private var lastAngle: Double?
     @State private var held = false
@@ -22,7 +23,12 @@ struct DialView: View {
                 Circle().fill(Palette.recess)
                 Circle()
                     .fill(Palette.key)
-                    .shadow(color: Palette.shadow.opacity(Palette.lift * 1.15), radius: held ? 3 : 8, y: held ? 1 : 5)
+                    .shadow(
+                        color: Palette.shadow.opacity(Palette.lift * 1.15),
+                        radius: held ? 3 : 8,
+                        x: held ? 0 : tilt.x * Motion.shadowDrift * 3,
+                        y: held ? 1 : 5 + tilt.y * Motion.shadowDrift * 2
+                    )
                     .overlay { Circle().strokeBorder(Palette.hairline, lineWidth: 0.5) }
                     .padding(rim)
                 TimelineView(.animation) { _ in

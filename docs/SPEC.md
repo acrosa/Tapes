@@ -91,7 +91,7 @@ On regular widths each track gets a full strip instead: select key, pan wheel, f
 The first press of Record asks for the microphone. If it is refused, an alert offers Settings.
 
 ### Header
-- **tapes** opens the shelf: open, create, rename (swipe), delete (swipe). Also holds the finish (Light, Dark or Green, each shown as a small preview tile), Haptics, and Show layout grid.
+- **The gear** at the top left opens the shelf: open, create, rename (swipe), delete (swipe). Also holds the finish (Light, Dark or Green, each shown as a small preview tile), Haptics, and Show layout grid.
 - **export** mixes the tape to a stereo WAV with the current mix and speed and opens the share sheet.
 
 Tape folders are also visible in the Files app (`Spule/Tapes/<id>/track1.wav` …).

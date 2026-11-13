@@ -37,8 +37,6 @@ struct LibrarySheet: View {
                             }
                         }
                     }
-                } header: {
-                    header("Tapes")
                 }
                 .listRowBackground(Palette.key)
                 Section {
@@ -71,6 +69,8 @@ struct LibrarySheet: View {
             .navigationTitle("Tapes")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                // The sheet keeps its name for VoiceOver, but prints no title: the tapes speak for themselves.
+                ToolbarItem(placement: .principal) { Color.clear.frame(width: 1, height: 1).accessibilityHidden(true) }
                 ToolbarItem(placement: .topBarLeading) {
                     Button("New tape", systemImage: "plus") {
                         recorder.newTape()

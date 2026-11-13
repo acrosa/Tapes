@@ -28,13 +28,14 @@ xcodebuild -project Spule.xcodeproj -scheme Spule \
 Debug launch arguments: `-seedDemoTape` fills an empty tape with synthetic notes, cues and a loop;
 `-autoplay` starts playback after loading; `-showsGrid YES` draws the layout grid;
 `-resetTapes` empties the shelf first (the UI tests use it); `-showTapes` opens the tapes sheet;
+`-tiltX` and `-tiltY` (0 to 1; a negative value is misread as a flag) fix the tilt that lights the glass;
 `-landscape` turns the window on its side (the way to check landscape in a simulator).
 
 ## Layout of the code
 
 | Path | What lives there |
 | --- | --- |
-| `Packages/GridKit` | Local package. Baseline unit (`Rhythm`), column grid (`ColumnGrid`, `GridContainer`, `UnitRow`), rhythm-locked type (`TypeSpec`, `.rhythm()`), debug `GridOverlay`. No third-party "GridKit" exists for this; this one is ours. |
+| `Packages/GridKit` | Local package. Baseline unit (`Rhythm`), column grid (`ColumnGrid`, `GridContainer`, `UnitRow`), row grid (`RowGrid`), rhythm-locked type (`TypeSpec`, `.rhythm()`), the on-grid check (`.gridChecked()`), debug `GridOverlay`. Its README is the layout contract. No third-party "GridKit" exists for this; this one is ours. |
 | `Packages/TapeEngine` | Local package, pure Swift. `TapeCore`: the tape in memory, the playhead, render, record, loop, click, bounce. |
 | `Spule/Audio/AudioIO.swift` | AVAudioEngine and AVAudioSession around `TapeCore`. |
 | `Spule/Model/Recorder.swift` | The one `@Observable` model. Every control action is a method here. |
@@ -48,6 +49,8 @@ Debug launch arguments: `-seedDemoTape` fills an empty tape with synthetic notes
 ## Rules
 
 **Layout**
+- Read `Packages/GridKit/README.md` first. Its contract is columns and rows together, from the first pass, verified, on every layout. That goes for the landing page in `web` as well.
+- Every part that should be on the grid carries `.gridChecked()`. `testEveryPartSitsOnTheGrid` fails if one is off; a new layout or orientation gets added to that test.
 - Every height, gap, padding and line height is a multiple of 4pt. Write `Rhythm.u(n)`, not a bare number.
 - Horizontal positions come from the column grid: `grid.gutter`, `grid.span(n)`, `UnitRow`. No hand-tuned widths. A control is a whole number of columns wide and fills them; do not centre a narrower control in a column or split a span by eye.
 - In landscape every part starts and ends on a row band (see `docs/DESIGN.md`). Parts in different panes share edges.
@@ -73,4 +76,4 @@ Debug launch arguments: `-seedDemoTape` fills an empty tape with synthetic notes
 
 **Scope**
 - Views do not touch `TapeCore` except to read `recorder.position` and track lengths for drawing.
-- The app is called Tapes (it was Spule; the Xcode target, folders, scheme and bundle identifier `app.spule.recorder` still carry the old name, and stay that way unless a rename is asked for). It has its own design. It is inspired by Reel's feature set, not a copy of its interface: do not reproduce Reel's name, artwork or layout.
+- The app is called Tapes (it was Spule; the Xcode target, folders and scheme still carry the old name, and stay that way unless a rename is asked for). Its bundle identifier is `co.alfajor.tapes`. It has its own design. It is inspired by Reel's feature set, not a copy of its interface: do not reproduce Reel's name, artwork or layout.

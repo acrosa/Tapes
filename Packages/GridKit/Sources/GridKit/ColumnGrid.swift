@@ -19,19 +19,21 @@ public struct ColumnGrid: Equatable, Sendable {
     /// inside them) is a quarter of a phone's width: the size of one key.
     public static let module = 3
 
-    /// The grid for a container of `width` points:
-    /// 12 fine columns below 600, 8 columns below 900, 12 columns from 900.
+    /// The grid for a container of `width` points. The columns are fine (about 15pt) and parts
+    /// are sized in several of them, so a row can be split in halves, thirds, quarters or sixths
+    /// and still land on column edges:
+    /// 12 columns below 600, 24 from 600. The gutter is 16 everywhere; the margin grows with the width.
     ///
-    /// With `compactHeight` (a phone on its side) the grid is 24 fine columns with the same
-    /// gutter as the upright phone, so a module is the same size in both orientations.
+    /// With `compactHeight` (a phone on its side) the margin shrinks to 16, since the safe areas
+    /// already inset the sides.
     public static func adaptive(width: CGFloat, compactHeight: Bool = false) -> ColumnGrid {
         if compactHeight {
             return ColumnGrid(columns: 24, margin: 16, gutter: 16, width: width)
         }
         switch width {
         case ..<600: return ColumnGrid(columns: 12, margin: 24, gutter: 16, width: width)
-        case ..<900: return ColumnGrid(columns: 8, margin: 32, gutter: 24, width: width)
-        default: return ColumnGrid(columns: 12, margin: 40, gutter: 24, width: width)
+        case ..<900: return ColumnGrid(columns: 24, margin: 32, gutter: 16, width: width)
+        default: return ColumnGrid(columns: 24, margin: 40, gutter: 16, width: width)
         }
     }
 
@@ -79,6 +81,8 @@ public struct GridContainer<Content: View>: View {
             .padding(.horizontal, grid.margin)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .environment(\.columnGrid, grid)
+            .environment(\.gridChecks, showsOverlay)
+            .coordinateSpace(.named(GridSpace.name))
             .overlay {
                 if showsOverlay { GridOverlay(grid: grid) }
             }

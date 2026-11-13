@@ -59,6 +59,22 @@ to the target (a one-pole glide). Four time constants give the transport its cha
 
 Change the feel by changing these constants, not by adding animation in the views.
 
+## Tilt
+
+The device's motion sensor lights the faceplate (`Tilt` in `Spule/Design/Tilt.swift`). It is the one
+place the interface moves without being touched, and it moves only because the device did.
+
+| Part | Behaviour |
+| --- | --- |
+| Display glass | One soft band of light lies across the window at 24° and slides with the tilt: side to side across the full width, a little up and down. Peak brightness `Motion.glare` (9 %). It adds light only, so text stays legible beneath it. |
+| Keys and wheels | The shadow leans up to `Motion.shadowDrift` (1.5pt) sideways and about 1pt up or down, as if the light stayed overhead. A pressed key has no drift. |
+| Dial | The same, three times as far, since it stands higher. |
+
+- Sampled 30 times a second, smoothed, and published only when it changes, so a still device redraws nothing.
+- The resting position is a device leaning back about 35°, as held for use.
+- Off with Reduce Motion, and when the app is not in front.
+- In a simulator there is no sensor; `-tiltX` and `-tiltY` (−1…1) set a fixed tilt.
+
 ## Haptics
 
 All through `Haptics`, which the Haptics preference can turn off.
@@ -80,6 +96,7 @@ gives the hard-stop haptic and nothing else. No alert, no shake.
 
 ## Reduce Motion
 
-The interface has no travel, parallax or zoom to remove: its motion is 1.5pt key travel, cross-fades
-and the tape itself, which is the content. These stay on with Reduce Motion. If larger transitions
+The interface has no travel or zoom to remove: its motion is 1.5pt key travel, cross-fades
+and the tape itself, which is the content. These stay on with Reduce Motion. The tilt effects
+(reflection and leaning shadows) are a kind of parallax and switch off. If larger transitions
 are added later, they need a cross-fade alternative.

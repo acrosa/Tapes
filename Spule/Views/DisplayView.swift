@@ -40,6 +40,7 @@ struct DisplayView: View {
         .padding(Rhythm.u(4))
         .frame(height: height)
         .background(Palette.glass, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .overlay { GlassGlare().clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous)) }
         .overlay {
             RoundedRectangle(cornerRadius: 12, style: .continuous)
                 .strokeBorder(Palette.hairline, lineWidth: 0.5)

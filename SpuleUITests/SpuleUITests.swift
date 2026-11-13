@@ -271,13 +271,13 @@ final class SpuleUITests: XCTestCase {
     // MARK: Tapes and export
 
     func testTapesCanBeCreatedRenamedAndReopened() {
-        button("tapes").tap()
+        button("Tapes and settings").tap()
         XCTAssertTrue(app.staticTexts["Tape 01"].waitForExistence(timeout: 5))
         app.buttons["New tape"].tap()
         wait("the new tape in the display") { self.display.contains("Tape 02") }
         XCTAssertFalse(button("export").isEnabled, "An empty tape has nothing to export")
 
-        button("tapes").tap()
+        button("Tapes and settings").tap()
         let row = app.staticTexts["Tape 01"]
         XCTAssertTrue(row.waitForExistence(timeout: 5))
         row.swipeLeft()
@@ -293,7 +293,7 @@ final class SpuleUITests: XCTestCase {
     }
 
     func testAFinishCanBeChosenAndIsRemembered() {
-        button("tapes").tap()
+        button("Tapes and settings").tap()
         let green = app.buttons["Green finish"]
         XCTAssertTrue(green.waitForExistence(timeout: 5))
         green.tap()
@@ -304,7 +304,7 @@ final class SpuleUITests: XCTestCase {
 
         app.terminate()
         launch(reset: false)
-        button("tapes").tap()
+        button("Tapes and settings").tap()
         XCTAssertTrue(app.buttons["Green finish"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.buttons["Green finish"].isSelected, "The finish should be remembered")
         app.buttons["Light finish"].tap()
@@ -317,12 +317,31 @@ final class SpuleUITests: XCTestCase {
         XCTAssertTrue(sheet.waitForExistence(timeout: 20), "The share sheet should appear with the mixdown")
     }
 
+    // MARK: Grid
+
+    /// With the layout grid shown, GridKit marks every checked part that is off a column edge
+    /// or off the baseline. There should be none, upright or sideways.
+    func testEveryPartSitsOnTheGrid() {
+        app.terminate()
+        app.launchArguments = ["-resetTapes", "-seedDemoTape", "-showsGrid", "YES"]
+        app.launch()
+        XCTAssertTrue(button("Play").waitForExistence(timeout: 10))
+        let faults = app.descendants(matching: .any).matching(identifier: "grid-fault")
+        pause(1.0)
+        XCTAssertEqual(faults.count, 0, "Upright: " + faults.allElementsBoundByIndex.map(\.label).joined(separator: "; "))
+
+        XCUIDevice.shared.orientation = .landscapeLeft
+        pause(1.5)
+        XCTAssertEqual(faults.count, 0, "Sideways: " + faults.allElementsBoundByIndex.map(\.label).joined(separator: "; "))
+        XCUIDevice.shared.orientation = .portrait
+    }
+
     // MARK: Landscape
 
     func testLandscapeShowsEveryControlAndTheTransportWorks() {
         XCUIDevice.shared.orientation = .landscapeLeft
         pause(1.5)
-        for label in ["Play", "Return to start", "Record on track 1", "click", "cue", "loop", "tapes", "export"] {
+        for label in ["Play", "Return to start", "Record on track 1", "click", "cue", "loop", "Tapes and settings", "export"] {
             XCTAssertTrue(button(label).isHittable, "\(label) should be reachable in landscape")
         }
         for label in ["speed", "tempo", "Tape dial", "Tape scale", "Track 1", "Track 2", "Track 3", "Track 4"] {

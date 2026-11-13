@@ -46,7 +46,7 @@ struct FaceplateView: View {
             }
             Button("Not now", role: .cancel) {}
         } message: {
-            Text("Tapes needs the microphone to record. You can allow it in Settings.")
+            Text("Vibe Tapes needs the microphone to record. You can allow it in Settings.")
         }
     }
 
@@ -55,11 +55,11 @@ struct FaceplateView: View {
     private var compact: some View {
         GeometryReader { geo in
             VStack(spacing: Rhythm.u(4)) {
-                HeaderBar(showsLibrary: $showsLibrary)
-                DisplayView()
-                TapeScaleView()
+                HeaderBar(showsLibrary: $showsLibrary).gridChecked()
+                DisplayView().gridChecked()
+                TapeScaleView().gridChecked()
                 ControlRow()
-                DialView()
+                DialView().gridChecked()
                 TrackKeys()
                 TransportRow()
             }
@@ -68,61 +68,66 @@ struct FaceplateView: View {
         }
     }
 
-    /// iPhone on its side: four row bands of equal height, 16pt apart, shared by every pane.
+    /// iPhone on its side: a `RowGrid` of four bands shared by every pane.
     /// Left half: header and display on bands 1–2, tape scale on band 3, wheels and keys on band 4.
     /// Next three modules: the dial on bands 1–3, the transport on band 4.
     /// Last module: one track key per band.
     private func landscape(_ grid: ColumnGrid) -> some View {
         GeometryReader { geo in
-            let gap = Rhythm.u(4)
             let top = Rhythm.u(4)
-            let band = max(Rhythm.u(16), Rhythm.snapDown((geo.size.height - top - Rhythm.u(2) - 3 * gap) / 4, to: Rhythm.u(2)))
+            let rows = RowGrid.fitting(height: geo.size.height - top - Rhythm.u(2), rows: 4, minimum: Rhythm.u(16))
             let module = ColumnGrid.module
             HStack(alignment: .top, spacing: grid.gutter) {
-                VStack(spacing: gap) {
-                    HeaderBar(showsLibrary: $showsLibrary)
-                    DisplayView(height: 2 * band - HeaderBar.height)
-                    TapeScaleView(height: band)
-                    ControlRow(faceHeight: band - Rhythm.u(6))
+                VStack(spacing: rows.gap) {
+                    HeaderBar(showsLibrary: $showsLibrary).gridChecked()
+                    DisplayView(height: rows.span(2) - HeaderBar.height - rows.gap).gridChecked()
+                    TapeScaleView(height: rows.rowHeight).gridChecked()
+                    ControlRow(faceHeight: rows.rowHeight - Rhythm.u(6))
                 }
                 .frame(width: grid.span(4 * module))
-                VStack(spacing: gap) {
+                VStack(spacing: rows.gap) {
                     DialView()
-                        .frame(height: 3 * band + 2 * gap)
-                    TransportRow(units: [1, 1, 1], height: band)
+                        .frame(height: rows.span(3))
+                        .gridChecked()
+                    TransportRow(units: [1, 1, 1], height: rows.rowHeight)
                 }
                 .frame(width: grid.span(3 * module))
                 TrackKeys(axis: .vertical)
                     .frame(width: grid.span(module))
             }
-            .frame(height: 4 * band + 3 * gap)
+            .frame(height: rows.height)
             .padding(.top, top)
         }
     }
 
+    /// Two panes. As on the phone, the height is snapped to 8pt and hangs from the top, so the
+    /// transport and the foot of the mixer land on the baseline grid whatever the screen's height.
     private func regular(_ grid: ColumnGrid) -> some View {
-        HStack(alignment: .top, spacing: grid.gutter) {
-            VStack(spacing: Rhythm.u(4)) {
-                HeaderBar(showsLibrary: $showsLibrary)
-                DisplayView()
-                TapeScaleView()
-                DialView()
-                TransportRow()
+        GeometryReader { geo in
+            HStack(alignment: .top, spacing: grid.gutter) {
+                VStack(spacing: Rhythm.u(4)) {
+                    HeaderBar(showsLibrary: $showsLibrary).gridChecked()
+                    DisplayView().gridChecked()
+                    TapeScaleView().gridChecked()
+                    DialView().gridChecked()
+                    TransportRow()
+                }
+                .frame(width: grid.span(grid.columns / 2))
+                VStack(spacing: Rhythm.u(6)) {
+                    ControlRow()
+                        .padding(.top, HeaderBar.height + Rhythm.u(4))
+                    MixerView().gridChecked()
+                }
             }
-            .frame(width: grid.span(grid.columns == 12 ? 7 : 4))
-            VStack(spacing: Rhythm.u(6)) {
-                ControlRow()
-                    .padding(.top, HeaderBar.height + Rhythm.u(4))
-                MixerView()
-            }
+            .frame(width: geo.size.width, height: Rhythm.snapDown(geo.size.height - Rhythm.u(12), to: Rhythm.u(2)))
+            .padding(.top, Rhythm.u(6))
         }
-        .padding(.vertical, Rhythm.u(6))
     }
 }
 
 // MARK: Header
 
-/// Two words printed on the faceplate, flush with the margins.
+/// A gear and a word printed on the faceplate, flush with the margins.
 struct HeaderBar: View {
     @Environment(Recorder.self) private var recorder
     @Binding var showsLibrary: Bool
@@ -131,7 +136,13 @@ struct HeaderBar: View {
 
     var body: some View {
         HStack(spacing: 0) {
-            Button("tapes") { showsLibrary = true }
+            Button { showsLibrary = true } label: {
+                // A quiet gear, in the colour of the legends: the tapes and the few settings live behind it.
+                Image(systemName: "gearshape")
+                    .font(.system(size: 15, weight: .regular))
+                    .foregroundStyle(Palette.legend)
+            }
+            .accessibilityLabel("Tapes and settings")
                 .buttonStyle(TextKeyStyle(alignment: .leading))
             Spacer(minLength: 0)
             Button("export") { recorder.export() }
@@ -187,6 +198,7 @@ struct ControlRow: View {
                 valueText: String(format: "%.2f times", recorder.tape.speed),
                 onReset: { recorder.resetSpeed() }
             )
+            .gridChecked()
             Wheel(
                 legend: "tempo",
                 value: $recorder.tempoPosition,
@@ -196,12 +208,15 @@ struct ControlRow: View {
                 length: faceHeight,
                 valueText: "\(Int(recorder.tape.bpm)) beats per minute"
             )
+            .gridChecked()
             LampKey(legend: "click", lamp: recorder.tape.click, hint: "Turns the metronome on or off", faceHeight: faceHeight) {
                 recorder.toggleClick()
             }
+            .gridChecked()
             LampKey(legend: "cue", lamp: false, hint: "Marks this position, or clears the mark here", faceHeight: faceHeight) {
                 recorder.toggleCue()
             }
+            .gridChecked()
             LampKey(
                 legend: "loop",
                 lamp: recorder.isLooping,
@@ -210,6 +225,7 @@ struct ControlRow: View {
             ) {
                 recorder.toggleLoop()
             }
+            .gridChecked()
         }
     }
 }
@@ -233,7 +249,7 @@ struct TrackKeys: View {
     }
 
     private var keys: some View {
-        ForEach(0..<TapeCore.trackCount, id: \.self) { TrackKey(index: $0) }
+        ForEach(0..<TapeCore.trackCount, id: \.self) { TrackKey(index: $0).gridChecked() }
     }
 }
 
@@ -357,7 +373,7 @@ struct MixerView: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: grid.gutter) {
-            ForEach(0..<TapeCore.trackCount, id: \.self) { ChannelStrip(index: $0) }
+            ForEach(0..<TapeCore.trackCount, id: \.self) { ChannelStrip(index: $0).gridChecked(rows: false) }
         }
     }
 }
@@ -432,6 +448,7 @@ struct TransportRow: View {
                     .foregroundStyle(Palette.ink)
             }
             .buttonStyle(KeyStyle())
+            .gridChecked()
             .accessibilityLabel("Return to start")
 
             Button { recorder.toggleRecord() } label: {
@@ -445,6 +462,7 @@ struct TransportRow: View {
             .overlay(alignment: .top) {
                 Lamp(on: recording, color: Palette.signal).padding(.top, Rhythm.u(2)).allowsHitTesting(false)
             }
+            .gridChecked()
             .accessibilityLabel(recording ? "Stop recording" : "Record on track \(recorder.selectedTrack + 1)")
 
             Button { recorder.togglePlay() } label: {
@@ -454,6 +472,7 @@ struct TransportRow: View {
                     .contentTransition(.symbolEffect(.replace))
             }
             .buttonStyle(KeyStyle())
+            .gridChecked()
             .accessibilityLabel(rolling ? "Stop" : "Play")
         }
         .frame(height: height)

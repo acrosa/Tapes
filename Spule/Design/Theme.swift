@@ -167,6 +167,10 @@ enum Motion {
     static let readout = Animation.easeInOut(duration: 0.16)
     /// How long a transient readout stays in the display.
     static let readoutHold: Duration = .milliseconds(1400)
+    /// Peak brightness of the reflection on the display glass.
+    static let glare = 0.09
+    /// How far, in points, a full tilt moves the shadow under a key. The dial's moves further.
+    static let shadowDrift = 1.5
 }
 
 @MainActor

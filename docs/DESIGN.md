@@ -28,10 +28,10 @@ Taken from the Braun audio line (SK 4, T 1000, the wall units) and the Bauhaus b
 | --- | --- | --- | --- | --- |
 | under 600 wide | 12 | 24 | 16 | iPhone upright, iPad in a narrow split |
 | compact height | 24 | 16 | 16 | iPhone on its side |
-| 600 to 899 wide | 8 | 32 | 24 | iPad portrait |
-| 900 and up | 12 | 40 | 24 | iPad landscape |
+| 600 to 899 wide | 24 | 32 | 16 | iPad portrait |
+| 900 and up | 24 | 40 | 16 | iPad landscape |
 
-On iPhone the columns are fine (about 15pt) and controls are sized in whole columns:
+The columns are fine (about 15pt on iPhone, 17 to 30 on iPad) and controls are sized in whole columns:
 
 - A **module** is 3 columns (`ColumnGrid.module`), about 76pt: a quarter of the upright screen. Track keys, wheels and transport keys are one module wide. Play is two modules upright.
 - A function key (click, cue, loop) is 2 columns, about 45pt.
@@ -49,7 +49,7 @@ hangs from the top, so every edge is on the baseline grid, the dial's included.
 
 | Section | Height | Columns |
 | --- | --- | --- |
-| Header | 32 | "tapes" flush left, "export" flush right |
+| Header | 32 | a gear flush left (tapes and settings), "export" flush right |
 | Display | 104 | 12 |
 | Tape scale | 56 | 12 |
 | Control row | 72 | speed 3, tempo 3, click 2, cue 2, loop 2 |
@@ -57,7 +57,7 @@ hangs from the top, so every edge is on the baseline grid, the dial's included.
 | Track keys | 72 | 3 each |
 | Transport | 64 | return 3, record 3, play 6 |
 
-**Regular** (two panes, top-aligned): the left pane (7 of 12 columns, or 4 of 8) holds header, display,
+**Regular** (two panes of 12 columns each, top-aligned, height snapped to 8pt): the left pane holds header, display,
 scale, dial and transport. The right pane holds the control row and four channel strips that run the
 full height. The control row divides the pane into the same twelve parts, so speed sits over strip 1,
 tempo over strip 2, and the three keys over strips 3 and 4. The status bar is hidden in this layout: on iPad it prints the app's name at the top left, and the faceplate carries no title.
@@ -76,9 +76,11 @@ a quarter of the usable height snapped down to 8pt (72 on most phones, never und
 The block hangs 16pt from the top. Compact height is tested before regular width, so the largest
 iPhones use this layout on their side, not the two-pane one.
 
-### Debug overlay
+### Debug overlay and checks
 Tapes sheet → Show layout grid (or launch with `-showsGrid YES`). Column bands plus a rule every 4pt.
-Layout work is checked against it on all three layouts.
+Layout work is checked against it on all three layouts. With the overlay on, any part marked
+`.gridChecked()` that is off a column edge or off the baseline is outlined in red, and the UI test
+`testEveryPartSitsOnTheGrid` fails. The landscape bands are a `RowGrid`.
 
 ## Type
 
@@ -150,7 +152,7 @@ Neither colour is ever decoration.
 | Glass | `glass` | 0.5pt hairline | none |
 
 Corner radii: display 12, tape scale 8, keys 8, fader caps 4, wheel slots 8 and rollers 4, dial round. Continuous corners.
-No gradients other than the key highlight. No blur, no translucency.
+No gradients other than the key highlight and the reflection on the display glass (see `MOTION.md`, Tilt). No blur, no translucency.
 
 ## Components
 

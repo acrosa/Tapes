@@ -1,6 +1,6 @@
 name: Spule
 options:
-  bundleIdPrefix: app.spule
+  bundleIdPrefix: co.alfajor
   deploymentTarget:
     iOS: "18.0"
   createIntermediateGroups: true
@@ -23,17 +23,18 @@ targets:
         DEVELOPMENT_TEAM: 49MWCX22SN
         CODE_SIGN_STYLE: Automatic
         TARGETED_DEVICE_FAMILY: "1,2"
-        PRODUCT_BUNDLE_IDENTIFIER: app.spule.recorder
+        PRODUCT_BUNDLE_IDENTIFIER: co.alfajor.tapes
         MARKETING_VERSION: "0.1.0"
         CURRENT_PROJECT_VERSION: 1
         GENERATE_INFOPLIST_FILE: YES
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
-        INFOPLIST_KEY_CFBundleDisplayName: Tapes
-        INFOPLIST_KEY_NSMicrophoneUsageDescription: Tapes records the microphone onto the selected tape track.
+        INFOPLIST_KEY_CFBundleDisplayName: Vibe Tapes
+        INFOPLIST_KEY_NSMicrophoneUsageDescription: Vibe Tapes records the microphone onto the selected tape track.
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
         INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone: UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight
         INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad: UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight
         INFOPLIST_KEY_UIFileSharingEnabled: YES
+        INFOPLIST_KEY_ITSAppUsesNonExemptEncryption: NO
         INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace: YES
   SpuleUITests:
     type: bundle.ui-testing
@@ -46,7 +47,7 @@ targets:
         SWIFT_VERSION: "6.0"
         DEVELOPMENT_TEAM: 49MWCX22SN
         CODE_SIGN_STYLE: Automatic
-        PRODUCT_BUNDLE_IDENTIFIER: app.spule.recorder.uitests
+        PRODUCT_BUNDLE_IDENTIFIER: co.alfajor.tapes.uitests
         GENERATE_INFOPLIST_FILE: YES
         TEST_TARGET_NAME: Spule
 schemes:

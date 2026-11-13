@@ -26,12 +26,20 @@ struct KeyFace: View {
     var radius: CGFloat = 8
     var face: Color = Palette.key
     var down = false
+    @Environment(Tilt.self) private var tilt
+
     var body: some View {
         let shape = RoundedRectangle(cornerRadius: radius, style: .continuous)
         shape
             .fill(face)
             .brightness(down ? -0.03 : 0)
-            .shadow(color: Palette.shadow.opacity(down ? 0.10 : Palette.lift), radius: down ? 0.5 : 2.5, y: down ? 0.5 : 2)
+            .shadow(
+                color: Palette.shadow.opacity(down ? 0.10 : Palette.lift),
+                radius: down ? 0.5 : 2.5,
+                // The light stays overhead; tilt the device and the shadow leans the other way.
+                x: down ? 0 : tilt.x * Motion.shadowDrift,
+                y: down ? 0.5 : 2 + tilt.y * Motion.shadowDrift * 0.6
+            )
             .overlay {
                 shape.strokeBorder(
                     LinearGradient(
