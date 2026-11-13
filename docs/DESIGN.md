@@ -50,17 +50,38 @@ hangs from the top, so every edge is on the baseline grid, the dial's included.
 | Section | Height | Columns |
 | --- | --- | --- |
 | Header | 32 | a gear flush left (tapes and settings), "export" flush right |
-| Display | 104 | 12 |
+| Display | 112 | 12 |
 | Tape scale | 56 | 12 |
 | Control row | 72 | speed 3, tempo 3, click 2, cue 2, loop 2 |
 | Dial | all remaining height | centred, diameter snapped to 8 |
 | Track keys | 72 | 3 each |
 | Transport | 64 | return 3, record 3, play 6 |
 
-**Regular** (two panes of 12 columns each, top-aligned, height snapped to 8pt): the left pane holds header, display,
-scale, dial and transport. The right pane holds the control row and four channel strips that run the
-full height. The control row divides the pane into the same twelve parts, so speed sits over strip 1,
-tempo over strip 2, and the three keys over strips 3 and 4. The status bar is hidden in this layout: on iPad it prints the app's name at the top left, and the faceplate carries no title.
+**Regular** (iPad). The faceplate is built larger here (`Metrics.large`, below): on a big screen
+the phone's sizes look lost. Two panes, top-aligned, height snapped to 8pt, status bar hidden
+(it would print the app's name at the top left). The split follows the screen's shape so neither
+pane is left empty:
+
+| | Left pane | Right pane |
+| --- | --- | --- |
+| Upright | 16 columns: header, display, scale, control row (speed 5, tempo 5, three keys of 2), dial, transport | 8 columns: the mixer, four strips of 2 |
+| On its side | 12 columns: header, display, scale, dial, transport | 12 columns: control row (3, 3, 2, 2, 2) over the mixer, four strips of 3 |
+
+A channel strip, top to bottom: select key, pan wheel, fader, mute, solo. Mute and solo are stacked
+so each is a full strip wide (two side by side would be under 44pt). The fader is never longer than
+480pt; where the strip is taller, the extra height opens the gaps between its parts evenly.
+
+**Sizes** (`Metrics` in `Theme.swift`; every value a multiple of 4):
+
+| | iPhone | iPad |
+| --- | --- | --- |
+| Gap between sections | 16 | 24 |
+| Header | 32 | 40 |
+| Display (inset) | 112 (16) | 152 (24) |
+| Tape scale | 56 | 72 |
+| Key face, wheel | 48 | 56 |
+| Transport | 64 | 88 |
+| Fader cap, groove | — | 48×32, 12 |
 
 **Landscape** (compact height, an iPhone on its side). Four row **bands** of equal height, 16pt apart,
 are shared by every pane, so parts in different panes have the same top and bottom edges. A band is
@@ -73,7 +94,7 @@ a quarter of the usable height snapped down to 8pt (72 on most phones, never und
 | 3 | tape scale, one band tall | dial, to the band's bottom edge | track 3 |
 | 4 | control row: wheels and key faces are the band less 24, legends beneath | return, record, play, one module each | track 4 |
 
-The block hangs 16pt from the top. Compact height is tested before regular width, so the largest
+The block is centred on the screen's full height, home indicator included, so the space above and below it looks equal. Bands are snapped to 4pt. Compact height is tested before regular width, so the largest
 iPhones use this layout on their side, not the two-pane one.
 
 ### Debug overlay and checks
@@ -89,16 +110,18 @@ typewritten label. Figures never shift as they change. Light, Regular and Medium
 `Spule/Fonts` with their SIL Open Font License and registered at launch by `Typo.registerFonts()`.
 (The proportional Geist files are still in the folder from before the switch and are not used.)
 
-| Token | Face | Size / line | Tracking | Use |
+| Role | Face | iPhone size / line | iPad size / line | Use |
 | --- | --- | --- | --- | --- |
-| `counter` | Light | 40 / 48 | −2 | tape counter |
-| `numeral` | Medium | 17 / 24 | 0 | track numbers |
-| `status` | Medium | 12 / 16 | +0.2 | display state, uppercase |
-| `caption` | Regular | 12 / 16 | −0.2 | display second line, header keys |
-| `legend` | Regular | 11 / 16 | −0.2 | faceplate legends, lowercase |
-| `scale` | Regular | 9 | — | scale numerals (Canvas) |
+| `counter` | Light | 48 / 56 | 64 / 72 | tape counter |
+| `numeral` | Medium | 17 / 24 | 22 / 28 | track numbers |
+| `status` | Medium | 12 / 16 | 15 / 20 | display state, uppercase |
+| `caption` | Regular | 12 / 16 | 15 / 20 | display second line, "export" |
+| `legend` | Regular | 12 / 16 | 13 / 20 | faceplate legends, lowercase |
+| scale | Regular | 10 | 12 | scale numerals (Canvas) |
 
-`.rhythm(spec)` sets the font and fixes the line box to the spec's line height, so text keeps the
+Text is set with `.faceType(role)`, which picks the size from the faceplate's `Metrics`.
+
+`.faceType` uses GridKit's `.rhythm(spec)`, which sets the font and fixes the line box to the spec's line height, so text keeps the
 baseline grid regardless of font metrics. Faceplate text is single-line and fixed-size, like print
 on a device. The tapes sheet uses system text styles and follows Dynamic Type.
 
@@ -161,8 +184,8 @@ No gradients other than the key highlight and the reflection on the display glas
 - **App icon**: the dial seen from above on the faceplate colour, with its orange index mark. Light and dark versions in `Spule/Assets.xcassets`.
 - **Wheel**: a thumbwheel. A sunken slot as wide as its module and as tall as a key face (48) holds a raised roller with ridges every 4pt. A 16pt gutter beside the roller carries an ink mark for the value and a thin line for the rest position, if there is one. It is rolled along its axis: up and down for speed and tempo, sideways for pan. It holds at detents (see `MOTION.md`). There are no rotary knobs: a control's shape must show the gesture that works it, and a finger cannot twist a small circle on glass.
 - **Dial**: sunken well, 8pt rim, raised platter with 60 ticks (every fifth longer), one groove, an orange index mark, and a flush spindle that does not turn.
-- **Track key**: number top left, lamp bottom left, level slot on the right, all inset 16 (grey fill is fader position, dark fill is live level).
-- **Fader**: 8pt groove that doubles as the meter, 40×24 cap with a centre line, a tick at 100 %.
+- **Track key**: number top left, lamp bottom left, an 8pt level slot on the right, all inset 16 (grey fill is fader position, dark fill is live level).
+- **Fader**: 12pt groove that doubles as the meter, 48×32 cap with a centre line, a line across the strip at 100 % that the cap's line meets.
 - **Display**: glass window. Words in uppercase `status`; one line of settings beneath.
 - **Tape scale**: sunken strip drawn in Canvas.
 

@@ -9,7 +9,8 @@ struct TapeScaleView: View {
     @Environment(Recorder.self) private var recorder
     @State private var dragging = false
 
-    var height = Rhythm.u(14)
+    @Environment(\.metrics) private var metrics
+    var height: CGFloat?
     private let inset = Rhythm.u(4)
 
     var body: some View {
@@ -40,7 +41,7 @@ struct TapeScaleView: View {
                     .onEnded { _ in dragging = false }
             )
         }
-        .frame(height: height)
+        .frame(height: height ?? metrics.scale)
         .background(Palette.recess, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
         .accessibilityElement()
         .accessibilityLabel("Tape scale")
@@ -82,7 +83,7 @@ struct TapeScaleView: View {
             let seconds = Double(recorder.core.length(ofTrack: track)) / rate
             guard seconds > 0 else { continue }
             let armed = recorder.transport == .recording && recorder.selectedTrack == track
-            let lane = CGRect(x: inset, y: Rhythm.u(2) + CGFloat(track) * Rhythm.u(1), width: max(2, x(seconds) - inset), height: 2)
+            let lane = CGRect(x: inset, y: Rhythm.u(2) + CGFloat(track) * (metrics.large ? 6 : 4), width: max(2, x(seconds) - inset), height: metrics.large ? 3 : 2)
             let color = armed ? Palette.signal : track == recorder.selectedTrack ? Palette.ink : Palette.inkSecondary.opacity(0.6)
             context.fill(Path(roundedRect: lane, cornerRadius: 1), with: .color(color))
         }
@@ -95,7 +96,7 @@ struct TapeScaleView: View {
             line(x(tick), size.height - (isMajor ? 12 : 8), size.height - 4, Palette.inkSecondary.opacity(isMajor ? 0.9 : 0.45))
             if isMajor, tick < span {
                 let label = Text(String(format: "%d:%02d", Int(tick) / 60, Int(tick) % 60))
-                    .font(Typo.scale)
+                    .font(Typo.scale(large: metrics.large))
                     .foregroundStyle(Palette.inkSecondary)
                 context.draw(label, at: CGPoint(x: x(tick) + 3, y: size.height - 9), anchor: .bottomLeading)
             }

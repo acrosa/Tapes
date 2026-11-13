@@ -54,8 +54,9 @@ Debug launch arguments: `-seedDemoTape` fills an empty tape with synthetic notes
 - Every height, gap, padding and line height is a multiple of 4pt. Write `Rhythm.u(n)`, not a bare number.
 - Horizontal positions come from the column grid: `grid.gutter`, `grid.span(n)`, `UnitRow`. No hand-tuned widths. A control is a whole number of columns wide and fills them; do not centre a narrower control in a column or split a span by eye.
 - In landscape every part starts and ends on a row band (see `docs/DESIGN.md`). Parts in different panes share edges.
-- Text on the faceplate uses `.rhythm(Typo.x)`. Do not call `.font()` on faceplate text.
-- Check all three layouts (compact, regular width, and compact-height landscape) with the grid overlay on before calling layout work done.
+- Text on the faceplate uses `.faceType(.role)`. Do not call `.font()` on faceplate text.
+- Sizes that differ between iPhone and iPad come from `Metrics` (in `Theme.swift`), read from the environment. Do not branch on the device in a view.
+- Check all four layouts (iPhone upright and on its side, iPad upright and on its side) with the grid overlay on before calling layout work done.
 
 **Design**
 - There are three finishes (Light, Dark, Green). Text on a key or in a well uses `Palette.ink`/`inkSecondary`; text on the faceplate itself uses `Palette.label`/`legend`. Check a visual change in all three.

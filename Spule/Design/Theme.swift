@@ -142,18 +142,67 @@ enum Typo {
         .custom("GeistMono-\(weight)", fixedSize: size)
     }
 
-    /// The tape counter.
-    static let counter = TypeSpec(font: mono("Light", 40), lineHeight: 48, tracking: -2)
-    /// Numerals on keys.
-    static let numeral = TypeSpec(font: mono("Medium", 17), lineHeight: 24, tracking: 0)
-    /// Display status words, uppercase.
-    static let status = TypeSpec(font: mono("Medium", 12), lineHeight: 16, tracking: 0.2)
-    /// Display secondary line.
-    static let caption = TypeSpec(font: mono("Regular", 12), lineHeight: 16, tracking: -0.2)
-    /// Faceplate legends, lowercase.
-    static let legend = TypeSpec(font: mono("Regular", 11), lineHeight: 16, tracking: -0.2)
+    /// The type for a role, at the phone's size or the larger one used on iPad.
+    static func spec(_ role: TypeRole, large: Bool) -> TypeSpec {
+        switch (role, large) {
+        case (.counter, false): TypeSpec(font: mono("Light", 48), lineHeight: 56, tracking: -2.5)
+        case (.counter, true): TypeSpec(font: mono("Light", 64), lineHeight: 72, tracking: -3.5)
+        case (.numeral, false): TypeSpec(font: mono("Medium", 17), lineHeight: 24, tracking: 0)
+        case (.numeral, true): TypeSpec(font: mono("Medium", 22), lineHeight: 28, tracking: 0)
+        case (.status, false): TypeSpec(font: mono("Medium", 12), lineHeight: 16, tracking: 0.2)
+        case (.status, true): TypeSpec(font: mono("Medium", 15), lineHeight: 20, tracking: 0.3)
+        case (.caption, false): TypeSpec(font: mono("Regular", 12), lineHeight: 16, tracking: -0.2)
+        case (.caption, true): TypeSpec(font: mono("Regular", 15), lineHeight: 20, tracking: -0.3)
+        case (.legend, false): TypeSpec(font: mono("Regular", 12), lineHeight: 16, tracking: -0.2)
+        case (.legend, true): TypeSpec(font: mono("Regular", 13), lineHeight: 20, tracking: -0.2)
+        }
+    }
+
     /// Scale numerals, drawn in Canvas.
-    static let scale = mono("Regular", 9)
+    static func scale(large: Bool) -> Font { mono("Regular", large ? 12 : 10) }
+}
+
+/// What a piece of faceplate text is for. Its size follows `Metrics`.
+enum TypeRole { case counter, numeral, status, caption, legend }
+
+/// The size the faceplate is built at: the phone's, or a larger one for iPad, where the same
+/// parts would otherwise look lost. Every value is a multiple of the 4pt unit.
+struct Metrics: Equatable {
+    var large = false
+
+    var gap: CGFloat { large ? Rhythm.u(6) : Rhythm.u(4) }
+    var header: CGFloat { large ? Rhythm.u(10) : Rhythm.u(8) }
+    var display: CGFloat { large ? Rhythm.u(38) : Rhythm.u(28) }
+    var displayInset: CGFloat { large ? Rhythm.u(6) : Rhythm.u(4) }
+    var scale: CGFloat { large ? Rhythm.u(18) : Rhythm.u(14) }
+    /// Height of a key face or a wheel.
+    var face: CGFloat { large ? Rhythm.u(14) : Rhythm.u(12) }
+    var transport: CGFloat { large ? Rhythm.u(22) : Rhythm.u(16) }
+    /// Size of a glyph on a key or in the header.
+    var glyph: CGFloat { large ? 22 : 16 }
+    var meterDot: CGFloat { large ? 6 : 4 }
+    /// Line height of a legend, for sums that include one.
+    var legendLine: CGFloat { Typo.spec(.legend, large: large).lineHeight }
+    /// A face with its legend beneath.
+    var labelledFace: CGFloat { face + Rhythm.u(2) + legendLine }
+}
+
+extension EnvironmentValues {
+    @Entry var metrics = Metrics()
+}
+
+private struct FaceType: ViewModifier {
+    let role: TypeRole
+    @Environment(\.metrics) private var metrics
+
+    func body(content: Content) -> some View {
+        content.rhythm(Typo.spec(role, large: metrics.large))
+    }
+}
+
+extension View {
+    /// Sets faceplate text in the type for `role`, at the size the faceplate is built at.
+    func faceType(_ role: TypeRole) -> some View { modifier(FaceType(role: role)) }
 }
 
 enum Motion {

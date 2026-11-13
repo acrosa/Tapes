@@ -6,14 +6,16 @@ import GridKit
 struct DisplayView: View {
     @Environment(Recorder.self) private var recorder
 
-    var height = Rhythm.u(26)
+    @Environment(\.metrics) private var metrics
+    /// Defaults to the height the faceplate's size calls for.
+    var height: CGFloat?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(alignment: .top, spacing: 0) {
                 TimelineView(.animation(minimumInterval: 1 / 30)) { _ in
                     Text(Self.counter(recorder.position))
-                        .rhythm(Typo.counter)
+                        .faceType(.counter)
                         .foregroundStyle(Palette.displayInk)
                 }
                 .accessibilityLabel("Tape position")
@@ -35,10 +37,10 @@ struct DisplayView: View {
                 Text(String(format: "%.2f×", recorder.tape.speed))
                     .foregroundStyle(recorder.tape.speed == 1 ? Palette.displayDim : Palette.displayInk)
             }
-            .rhythm(Typo.caption)
+            .faceType(.caption)
         }
-        .padding(Rhythm.u(4))
-        .frame(height: height)
+        .padding(metrics.displayInset)
+        .frame(height: height ?? metrics.display)
         .background(Palette.glass, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
         .overlay { GlassGlare().clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous)) }
         .overlay {
@@ -72,7 +74,7 @@ struct DisplayView: View {
                 Circle().fill(Palette.signal).frame(width: 8, height: 8)
             }
             Text(word)
-                .rhythm(Typo.status)
+                .faceType(.status)
                 .foregroundStyle(recording ? Palette.signal : Palette.displayInk)
                 .contentTransition(.opacity)
         }
@@ -89,15 +91,16 @@ struct DisplayView: View {
 /// A level meter as a row of perforations, after a speaker grille. The last three run hot.
 struct DotMeter: View {
     var level: Float
+    @Environment(\.metrics) private var metrics
     private let count = 16
 
     var body: some View {
         let lit = Int((meterPosition(level) * Double(count)).rounded())
-        HStack(spacing: Rhythm.u(1)) {
+        HStack(spacing: metrics.meterDot) {
             ForEach(0..<count, id: \.self) { index in
                 Circle()
                     .fill(index < lit ? (index >= count - 3 ? Palette.signal : Palette.displayInk) : Palette.displayDim.opacity(0.35))
-                    .frame(width: 4, height: 4)
+                    .frame(width: metrics.meterDot, height: metrics.meterDot)
             }
         }
         .frame(height: Rhythm.u(2))

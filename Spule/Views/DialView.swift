@@ -114,8 +114,8 @@ private struct DialFace: View {
             for index in 0..<60 {
                 let major = index.isMultiple(of: 5)
                 let angle = Double(index) / 60 * 2 * .pi
-                let outer = radius - 10
-                let inner = outer - (major ? 10 : 5)
+                let outer = radius * 0.925
+                let inner = outer - radius * (major ? 0.075 : 0.0375)
                 var tick = Path()
                 tick.move(to: CGPoint(x: center.x + cos(angle) * inner, y: center.y + sin(angle) * inner))
                 tick.addLine(to: CGPoint(x: center.x + cos(angle) * outer, y: center.y + sin(angle) * outer))
@@ -126,7 +126,8 @@ private struct DialFace: View {
                 Path(ellipseIn: CGRect(x: center.x - groove, y: center.y - groove, width: groove * 2, height: groove * 2)),
                 with: .color(Palette.hairline), lineWidth: 1
             )
-            let mark = CGRect(x: center.x - 4, y: center.y - radius + 28, width: 8, height: 8)
+            let dot = max(8, radius * 0.06)
+            let mark = CGRect(x: center.x - dot / 2, y: center.y - radius * 0.79 - dot / 2, width: dot, height: dot)
             context.fill(Path(ellipseIn: mark), with: .color(Palette.signal))
         }
     }

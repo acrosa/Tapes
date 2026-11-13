@@ -80,7 +80,7 @@ struct Legend: View {
 
     var body: some View {
         Text(text)
-            .rhythm(Typo.legend)
+            .faceType(.legend)
             .fixedSize()
             .foregroundStyle(onKey ? Palette.inkSecondary : Palette.legend)
     }
@@ -127,7 +127,7 @@ struct Wheel: View {
     var detents: [Double] = []
     /// Points of drag the wheel stays in a detent for.
     var detentWidth: CGFloat = 16
-    /// Length of the slot along a vertical wheel. A horizontal wheel is as long as its column.
+    /// Length of the slot along a vertical wheel; thickness of a horizontal one, which is as long as its column.
     var length: CGFloat = Rhythm.u(12)
     var valueText: String
     var onReset: (() -> Void)?
@@ -165,7 +165,7 @@ struct Wheel: View {
                         .position(point(markPosition(value, along), gutter / 2, along))
                 }
             }
-            .frame(height: axis == .vertical ? length : Rhythm.u(12))
+            .frame(height: length)
             .contentShape(Rectangle())
             .gesture(
                 // The drag must start at zero distance: with a threshold, the double-tap below never fires.
@@ -271,7 +271,8 @@ struct Fader: View {
     var label: String
 
     @State private var start: Double?
-    private let cap = CGSize(width: Rhythm.u(10), height: Rhythm.u(6))
+    private let cap = CGSize(width: Rhythm.u(12), height: Rhythm.u(8))
+    private let groove = Rhythm.u(3)
 
     var body: some View {
         GeometryReader { geo in
@@ -279,21 +280,22 @@ struct Fader: View {
             ZStack(alignment: .top) {
                 Capsule()
                     .fill(Palette.recess)
-                    .frame(width: Rhythm.u(2))
+                    .frame(width: groove)
                     .frame(maxHeight: .infinity)
                     .overlay(alignment: .bottom) {
                         Capsule()
                             .fill(Palette.ink)
-                            .frame(width: Rhythm.u(2), height: geo.size.height * CGFloat(meterPosition(level)))
+                            .frame(width: groove, height: geo.size.height * CGFloat(meterPosition(level)))
                             .animation(.linear(duration: 0.05), value: level)
                     }
+                // 100 %: a line across the strip that the cap's own line meets.
                 Rectangle()
                     .fill(Palette.legend)
-                    .frame(width: Rhythm.u(6), height: 1)
-                    .offset(x: -Rhythm.u(6), y: cap.height / 2 + travel * (1 - unity))
+                    .frame(height: 1)
+                    .offset(y: cap.height / 2 + travel * (1 - unity))
                 KeyFace(radius: 4, down: start != nil)
                     .overlay { Rectangle().fill(Palette.ink).frame(height: 1.5) }
-                    .frame(width: cap.width, height: cap.height)
+                    .frame(width: min(cap.width, geo.size.width), height: cap.height)
                     .offset(y: travel * (1 - value))
             }
             .frame(maxWidth: .infinity)
