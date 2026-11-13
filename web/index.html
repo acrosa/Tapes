@@ -25,8 +25,11 @@
     --hairline: rgba(26, 26, 25, 0.12);
     --lift: rgba(0, 0, 0, 0.22);
     --sheen: rgba(255, 255, 255, 0.9);
+    --mark: var(--ink);        /* print on a raised or sunken part */
+    --mark-2: var(--ink-2);
     --shot-light: block;
     --shot-dark: none;
+    --shot-green: none;
     --font: "Geist", "Helvetica Neue", Helvetica, Arial, sans-serif;
     --mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
     --u: 4px;
@@ -45,6 +48,33 @@
     --ink: #E9E7E1; --ink-2: #A09E98; --display-ink: #ECEAE4; --display-dim: #7C7A74;
     --signal: #F05A30; --lamp: #3DFF7A; --hairline: rgba(255, 255, 255, 0.12);
     --lift: rgba(0, 0, 0, 0.5); --sheen: rgba(255, 255, 255, 0.1); --shot-light: none; --shot-dark: block;
+    color-scheme: dark;
+  }
+
+  /* A finish picked on the page wins over the viewer's light or dark setting. */
+  :root[data-finish="light"] {
+    --surface: #ECEAE4; --key: #F7F6F2; --recess: #DDDAD2; --glass: #171716;
+    --ink: #1A1A19; --ink-2: #5F5D57; --mark: #1A1A19; --mark-2: #5F5D57; --display-ink: #F2F0EA; --display-dim: #8E8C86;
+    --signal: #E8451E; --lamp: #14D94F; --hairline: rgba(26, 26, 25, 0.12);
+    --lift: rgba(0, 0, 0, 0.22); --sheen: rgba(255, 255, 255, 0.9);
+    --shot-light: block; --shot-dark: none; --shot-green: none;
+    color-scheme: light;
+  }
+  :root[data-finish="dark"] {
+    --surface: #1C1C1B; --key: #2B2B29; --recess: #121211; --glass: #0B0B0A;
+    --ink: #E9E7E1; --ink-2: #A09E98; --mark: #E9E7E1; --mark-2: #A09E98; --display-ink: #ECEAE4; --display-dim: #7C7A74;
+    --signal: #F05A30; --lamp: #3DFF7A; --hairline: rgba(255, 255, 255, 0.12);
+    --lift: rgba(0, 0, 0, 0.5); --sheen: rgba(255, 255, 255, 0.1);
+    --shot-light: none; --shot-dark: block; --shot-green: none;
+    color-scheme: dark;
+  }
+  /* Green: light print on the body, dark print on the putty parts. */
+  :root[data-finish="green"] {
+    --surface: #5E6B64; --key: #DCDCCB; --recess: #C2C4B2; --glass: #1B211E;
+    --ink: #F1EFE4; --ink-2: #ECEADF; --mark: #1E211E; --mark-2: #4E5149; --display-ink: #ECEAE0; --display-dim: #8B9089;
+    --signal: #F0621F; --lamp: #1FE05A; --hairline: rgba(241, 239, 228, 0.28);
+    --lift: rgba(0, 0, 0, 0.35); --sheen: rgba(255, 255, 255, 0.6);
+    --shot-light: none; --shot-dark: none; --shot-green: block;
     color-scheme: dark;
   }
 
@@ -84,7 +114,16 @@
 
   /* Header */
   .bar { height: 32px; align-items: center; }
-  .mark { grid-column: span 6; font-weight: 500; font-size: 15px; line-height: 32px; letter-spacing: -0.02em; }
+  .finish { grid-column: span 6; justify-self: end; display: flex; gap: 4px; margin-right: -9px; }
+  .finish button { width: 32px; height: 32px; padding: 0; border: 0; background: none; display: grid; place-items: center; cursor: pointer; border-radius: 50%; }
+  .finish i { width: 14px; height: 14px; border-radius: 50%; box-shadow: 0 0 0 1px var(--hairline); }
+  .finish button[aria-checked="true"] i { box-shadow: 0 0 0 1px var(--hairline), 0 0 0 3px var(--surface), 0 0 0 4.5px var(--ink); }
+  .finish button:focus-visible { outline: 2px solid var(--ink); outline-offset: -2px; }
+  /* The swatches show the finishes themselves, so their colours do not follow the page. */
+  .finish .f-light { background: #F7F6F2; }
+  .finish .f-dark { background: #1C1C1B; }
+  .finish .f-green { background: #5E6B64; }
+  .mark { grid-column: span 6; font-weight: 500; font-size: 13px; line-height: 32px; letter-spacing: 0.08em; text-transform: uppercase; }
 
   /* Hero */
   .hero { row-gap: 48px; align-items: start; }
@@ -123,6 +162,7 @@
   .stage img { display: block; }
   .stage .light { display: var(--shot-light); }
   .stage .dark { display: var(--shot-dark); }
+  .stage .green { display: var(--shot-green); }
   .stage .phone { grid-column: 2 / span 3; }
   .stage .pad { grid-column: 1 / span 4; }
   .stage .phone img { height: round(down, calc(100cqw * 1300 / 598), 8px); border-radius: 13% / 6%; }
@@ -145,16 +185,16 @@
   .setups figure { grid-column: span 6; background: var(--recess); border-radius: 12px; padding: 24px; display: flex; flex-direction: column; gap: 16px; }
   .setups .frame { container-type: inline-size; }
   .setups svg { display: block; width: 100%; height: round(down, calc(100cqw * 240 / 440), 8px); }
-  .setups .part { fill: var(--key); stroke: var(--ink); stroke-width: 1.25; }
-  .setups .knob { fill: var(--key); stroke: var(--ink); stroke-width: 1.25; }
-  .setups .sunk { fill: var(--recess); stroke: var(--ink); stroke-width: 1.25; }
+  .setups .part { fill: var(--key); stroke: var(--mark); stroke-width: 1.25; }
+  .setups .knob { fill: var(--key); stroke: var(--mark); stroke-width: 1.25; }
+  .setups .sunk { fill: var(--recess); stroke: var(--mark); stroke-width: 1.25; }
   .setups .glass { fill: var(--glass); stroke: none; }
-  .setups .line { fill: none; stroke: var(--ink); stroke-width: 1.25; stroke-linecap: round; }
+  .setups .line { fill: none; stroke: var(--mark); stroke-width: 1.25; stroke-linecap: round; }
   .setups .signal { fill: none; stroke: var(--signal); stroke-width: 2; stroke-linecap: round; }
   .setups .head, .setups .dot { fill: var(--signal); stroke: none; }
   .setups .lit { fill: var(--lamp); stroke: none; }
-  .setups text { font: 400 10px var(--mono); fill: var(--ink-2); stroke: none; }
-  .setups figcaption { font-family: var(--mono); letter-spacing: 0; }
+  .setups text { font: 400 10px var(--mono); fill: var(--mark-2); stroke: none; }
+  .setups figcaption { font-family: var(--mono); letter-spacing: 0; color: var(--mark-2); }
 
   /* Finishes */
   .shots figure { grid-column: span 4; display: flex; flex-direction: column; gap: 16px; }
@@ -206,6 +246,11 @@
 
   <header class="bar row">
     <span class="mark">tapes</span>
+    <div class="finish" role="radiogroup" aria-label="Finish">
+      <button type="button" role="radio" aria-checked="false" aria-label="Light" data-finish="light"><i class="f-light"></i></button>
+      <button type="button" role="radio" aria-checked="false" aria-label="Dark" data-finish="dark"><i class="f-dark"></i></button>
+      <button type="button" role="radio" aria-checked="false" aria-label="Green" data-finish="green"><i class="f-green"></i></button>
+    </div>
   </header>
 
   <section class="hero row">
@@ -228,10 +273,12 @@
         <div class="phone" id="shot-phone" role="tabpanel" aria-labelledby="tab-phone">
           <img class="light" src="img/iphone-light.png" width="598" height="1300" alt="Tapes on an iPhone: display, tape scale, two thumbwheels, three keys, the dial, four track keys and the transport.">
           <img class="dark" src="img/iphone-dark.png" width="598" height="1300" alt="Tapes on an iPhone: display, tape scale, two thumbwheels, three keys, the dial, four track keys and the transport.">
+          <img class="green" src="img/iphone-green.png" width="598" height="1300" alt="Tapes on an iPhone: display, tape scale, two thumbwheels, three keys, the dial, four track keys and the transport.">
         </div>
         <div class="pad" id="shot-pad" role="tabpanel" aria-labelledby="tab-pad" hidden>
           <img class="light" src="img/ipad-light.png" width="1034" height="1500" alt="Tapes on an iPad: the display, tape scale, dial and transport on the left, and a mixer with a fader for each of the four tracks on the right.">
           <img class="dark" src="img/ipad-dark.png" width="1034" height="1500" alt="Tapes on an iPad: the display, tape scale, dial and transport on the left, and a mixer with a fader for each of the four tracks on the right.">
+          <img class="green" src="img/ipad-green.png" width="1034" height="1500" alt="Tapes on an iPad: the display, tape scale, dial and transport on the left, and a mixer with a fader for each of the four tracks on the right.">
         </div>
       </div>
     </div>
@@ -344,6 +391,30 @@
     });
   });
   pick(0);
+
+  // Finish: none chosen means the page follows the viewer's light or dark setting.
+  var root = document.documentElement, swatches = document.querySelectorAll(".finish button");
+  var dark = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
+  function current() {
+    return root.getAttribute("data-finish") || root.getAttribute("data-theme") || (dark && dark.matches ? "dark" : "light");
+  }
+  function mark() {
+    var now = current();
+    swatches.forEach(function (b) { b.setAttribute("aria-checked", b.getAttribute("data-finish") === now ? "true" : "false"); });
+  }
+  swatches.forEach(function (b) {
+    b.addEventListener("click", function () {
+      root.setAttribute("data-finish", b.getAttribute("data-finish"));
+      try { localStorage.setItem("tapes-finish", b.getAttribute("data-finish")); } catch (e) {}
+      mark();
+    });
+  });
+  try {
+    var saved = localStorage.getItem("tapes-finish");
+    if (saved === "light" || saved === "dark" || saved === "green") root.setAttribute("data-finish", saved);
+  } catch (e) {}
+  if (dark && dark.addEventListener) dark.addEventListener("change", mark);
+  mark();
 
   var lines = document.getElementById("gridlines"), rows = document.getElementById("rowlines");
   function sync() { lines.hidden = rows.hidden = location.hash !== "#grid"; }
