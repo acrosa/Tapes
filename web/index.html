@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!--page-->
+<title>Tapes</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Tapes is a four-track tape recorder for iPhone and iPad. One screen, no menus.">
+<link rel="icon" href="img/icon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500&display=swap">
+<style>
+  /* Layout: one 12-column sheet, 4px baseline. The hero is the appliance itself: a display
+     window and a dial you can turn. Everything below is print on the same faceplate. */
+  :root {
+    --surface: #ECEAE4;
+    --key: #F7F6F2;
+    --recess: #DDDAD2;
+    --glass: #171716;
+    --ink: #1A1A19;
+    --ink-2: #5F5D57;
+    --display-ink: #F2F0EA;
+    --display-dim: #8E8C86;
+    --signal: #E8451E;
+    --lamp: #14D94F;
+    --hairline: rgba(26, 26, 25, 0.12);
+    --lift: rgba(0, 0, 0, 0.22);
+    --sheen: rgba(255, 255, 255, 0.9);
+    --shot-light: block;
+    --shot-dark: none;
+    --font: "Geist", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    --u: 4px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --surface: #1C1C1B; --key: #2B2B29; --recess: #121211; --glass: #0B0B0A;
+      --ink: #E9E7E1; --ink-2: #A09E98; --display-ink: #ECEAE4; --display-dim: #7C7A74;
+      --signal: #F05A30; --lamp: #3DFF7A; --hairline: rgba(255, 255, 255, 0.12);
+      --lift: rgba(0, 0, 0, 0.5); --sheen: rgba(255, 255, 255, 0.1); --shot-light: none; --shot-dark: block;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --surface: #1C1C1B; --key: #2B2B29; --recess: #121211; --glass: #0B0B0A;
+    --ink: #E9E7E1; --ink-2: #A09E98; --display-ink: #ECEAE4; --display-dim: #7C7A74;
+    --signal: #F05A30; --lamp: #3DFF7A; --hairline: rgba(255, 255, 255, 0.12);
+    --lift: rgba(0, 0, 0, 0.5); --sheen: rgba(255, 255, 255, 0.1); --shot-light: none; --shot-dark: block;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body {
+    margin: 0;
+    background: var(--surface);
+    color: var(--ink);
+    font: 400 16px/24px var(--font);
+    font-variant-numeric: tabular-nums;
+    -webkit-font-smoothing: antialiased;
+  }
+  .sheet {
+    max-width: 1088px;
+    margin: 0 auto;
+    padding-block: calc(var(--u) * 6) calc(var(--u) * 12);
+    padding-left: max(24px, env(safe-area-inset-left, 0px));
+    padding-right: max(24px, env(safe-area-inset-right, 0px));
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--u) * 24);
+  }
+  h1, h2, h3, p { margin: 0; }
+  .legend { font-size: 12px; line-height: 16px; letter-spacing: 0.01em; color: var(--ink-2); }
+
+  /* Header */
+  .bar { display: flex; justify-content: space-between; align-items: center; height: 32px; }
+  .mark { font-weight: 500; font-size: 15px; letter-spacing: -0.02em; }
+
+  /* Hero */
+  .hero { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 24px; row-gap: 48px; align-items: center; margin-top: calc(var(--u) * -8); }
+  .pitch { grid-column: span 6; display: flex; flex-direction: column; gap: 24px; min-width: 0; }
+  .pitch h1 { font-weight: 300; font-size: clamp(40px, 6vw, 64px); line-height: 1.05; letter-spacing: -0.035em; text-wrap: balance; }
+  .pitch p { font-size: 18px; line-height: 28px; color: var(--ink-2); max-width: 30em; }
+  .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 8px; }
+  /* Black with a grey edge and white print in both themes, after Apple's preferred black badge. */
+  .store {
+    display: flex; align-items: center; gap: 10px; height: 48px; padding: 0 18px 0 12px; border-radius: 10px;
+    background: #000; color: #fff; box-shadow: inset 0 0 0 1px #A6A6A6;
+  }
+  .store svg { display: block; flex: none; }
+  .store span { display: flex; flex-direction: column; font-weight: 500; font-size: 16px; line-height: 20px; letter-spacing: -0.01em; }
+  .store small { font-weight: 400; font-size: 10px; line-height: 12px; letter-spacing: 0.01em; color: #fff; }
+  .source {
+    display: flex; align-items: center; height: 48px; padding: 0 20px; border-radius: 10px;
+    font-size: 15px; line-height: 20px; letter-spacing: -0.01em; color: var(--ink); text-decoration: none;
+    box-shadow: inset 0 0 0 1px var(--hairline);
+  }
+  .source:hover { box-shadow: inset 0 0 0 1px var(--ink-2); }
+  .source:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+  .lamp { width: 8px; height: 8px; border-radius: 50%; background: var(--lamp); box-shadow: 0 0 8px var(--lamp); flex: none; }
+
+  .unit { grid-column: 8 / span 5; display: flex; flex-direction: column; align-items: center; gap: 24px; min-width: 0; }
+  .picker { display: flex; gap: 24px; }
+  .picker button {
+    font: 400 12px/16px var(--font); letter-spacing: 0.01em; color: var(--ink-2); background: none;
+    border: 0; padding: 12px 0; display: flex; align-items: center; gap: 8px; cursor: pointer;
+  }
+  .picker button:hover { color: var(--ink); }
+  .picker button[aria-selected="true"] { color: var(--ink); }
+  .picker button:focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; border-radius: 4px; }
+  .picker i { width: 6px; height: 6px; border-radius: 50%; background: var(--recess); flex: none; }
+  .picker button[aria-selected="true"] i { background: var(--ink); }
+  .stage { display: flex; align-items: center; justify-content: center; width: 100%; min-height: 560px; }
+  .stage img { width: auto; height: auto; max-width: 100%; max-height: 560px; box-shadow: 0 0 0 0.5px var(--hairline), 0 16px 40px -16px var(--lift); }
+  .stage .light { display: var(--shot-light); }
+  .stage .dark { display: var(--shot-dark); }
+  .stage .phone img { border-radius: 36px; }
+  .stage .pad img { border-radius: 20px; }
+
+  /* Features */
+  .features { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 48px 24px; }
+  .features h3 { font-weight: 500; font-size: 16px; line-height: 24px; letter-spacing: -0.01em; }
+  .features p { color: var(--ink-2); margin-top: 8px; }
+
+  /* Setups */
+  .plug { display: flex; flex-direction: column; gap: 32px; }
+  .plug h2 { font-weight: 300; font-size: 32px; line-height: 40px; letter-spacing: -0.03em; }
+  .intro { display: flex; flex-direction: column; gap: 8px; max-width: 34em; }
+  .intro p { color: var(--ink-2); }
+  .setups { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+  .setups figure { background: var(--recess); border-radius: 12px; padding: 24px; gap: 16px; }
+  .setups svg { display: block; width: 100%; height: auto; }
+  .setups .part { fill: var(--key); stroke: var(--ink); stroke-width: 1.25; }
+  .setups .knob { fill: var(--key); stroke: var(--ink); stroke-width: 1.25; }
+  .setups .sunk { fill: var(--recess); stroke: var(--ink); stroke-width: 1.25; }
+  .setups .glass { fill: var(--glass); stroke: none; }
+  .setups .line { fill: none; stroke: var(--ink); stroke-width: 1.25; stroke-linecap: round; }
+  .setups .signal { fill: none; stroke: var(--signal); stroke-width: 2; stroke-linecap: round; }
+  .setups .head, .setups .dot { fill: var(--signal); stroke: none; }
+  .setups .lit { fill: var(--lamp); stroke: none; }
+  .setups text { font: 400 11px var(--font); fill: var(--ink-2); stroke: none; }
+
+  /* Finishes */
+  .finishes { display: flex; flex-direction: column; gap: 32px; }
+  .finishes h2 { font-weight: 300; font-size: 32px; line-height: 40px; letter-spacing: -0.03em; }
+  .shots { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+  figure { margin: 0; display: flex; flex-direction: column; gap: 12px; }
+  figure img { display: block; width: 100%; height: auto; border-radius: clamp(20px, 4vw, 40px); box-shadow: 0 0 0 0.5px var(--hairline), 0 12px 32px -12px var(--lift); }
+
+  footer { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; border-top: 0.5px solid var(--hairline); padding-top: 24px; }
+
+  @media (max-width: 820px) {
+    .sheet { gap: calc(var(--u) * 18); }
+    .hero { margin-top: 0; }
+    .pitch, .unit { grid-column: 1 / -1; }
+    .features { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .setups { grid-template-columns: minmax(0, 1fr); }
+  }
+  @media (max-width: 480px) {
+    .stage { min-height: 0; }
+    .features { grid-template-columns: minmax(0, 1fr); gap: 32px; }
+    .shots { gap: 12px; }
+  }
+</style>
+<!--/head-->
+</head>
+<body>
+<!--body-->
+<div class="sheet">
+
+  <header class="bar">
+    <span class="mark">tapes</span>
+  </header>
+
+  <section class="hero">
+    <div class="pitch">
+      <h1>A four-track tape recorder for iPhone and iPad.</h1>
+      <p>One screen, no menus. Turn the dial to move the tape.</p>
+      <div class="actions">
+        <div class="store" role="img" aria-label="Coming soon to the App Store">
+          <svg viewBox="0 0 32 32" width="28" height="28" aria-hidden="true">
+            <path d="M17.3 8.2 10.4 20.2M8.9 22.8l-1.1 1.9M14.7 8.2l9.3 16.5M5.6 20.2h12M21.6 20.2h4.8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>
+          </svg>
+          <span><small>Coming soon</small>App Store</span>
+        </div>
+        <a class="source" href="https://github.com/acrosa/Tapes">Get the source</a>
+      </div>
+    </div>
+
+    <div class="unit">
+      <div class="picker" role="tablist" aria-label="Device">
+        <button type="button" role="tab" id="tab-phone" aria-selected="true" aria-controls="shot-phone"><i aria-hidden="true"></i>iPhone</button>
+        <button type="button" role="tab" id="tab-pad" aria-selected="false" aria-controls="shot-pad"><i aria-hidden="true"></i>iPad</button>
+      </div>
+      <div class="stage">
+        <div class="phone" id="shot-phone" role="tabpanel" aria-labelledby="tab-phone">
+          <img class="light" src="img/iphone-light.png" width="598" height="1300" alt="Tapes on an iPhone: display, tape scale, two thumbwheels, three keys, the dial, four track keys and the transport.">
+          <img class="dark" src="img/iphone-dark.png" width="598" height="1300" alt="Tapes on an iPhone: display, tape scale, two thumbwheels, three keys, the dial, four track keys and the transport.">
+        </div>
+        <div class="pad" id="shot-pad" role="tabpanel" aria-labelledby="tab-pad" hidden>
+          <img class="light" src="img/ipad-light.png" width="1034" height="1500" alt="Tapes on an iPad: the display, tape scale, dial and transport on the left, and a mixer with a fader for each of the four tracks on the right.">
+          <img class="dark" src="img/ipad-dark.png" width="1034" height="1500" alt="Tapes on an iPad: the display, tape scale, dial and transport on the left, and a mixer with a fader for each of the four tracks on the right.">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="features" aria-label="What it is for">
+    <div>
+      <h3>Catch an idea</h3>
+      <p>Open it, press record, play. It’s saved when you stop.</p>
+    </div>
+    <div>
+      <h3>Layer a demo</h3>
+      <p>Guitar first, then bass, then a voice. One track at a time, up to four.</p>
+    </div>
+    <div>
+      <h3>Work on a part</h3>
+      <p>Loop the bars you keep missing and play them until they stick.</p>
+    </div>
+    <div>
+      <h3>Play in time</h3>
+      <p>Turn on the click and record along to it.</p>
+    </div>
+    <div>
+      <h3>Bend the sound</h3>
+      <p>Slow the tape down or speed it up. The pitch goes with it.</p>
+    </div>
+    <div>
+      <h3>Send it to someone</h3>
+      <p>Save the mix as a WAV file and share it with your band.</p>
+    </div>
+  </section>
+
+  <section class="plug">
+    <div class="intro">
+      <h2>Plug things in</h2>
+      <p>Tapes records from whatever input your iPhone or iPad is using. Connect USB audio gear and that becomes the input.</p>
+    </div>
+    <div class="setups">
+      <figure>
+        <svg viewBox="0 0 440 240" role="img" aria-label="A synth connected to an iPhone with one USB-C cable.">
+          <rect class="part" x="16" y="88" width="204" height="84" rx="8"/>
+          <rect class="sunk" x="28" y="100" width="56" height="20" rx="4"/>
+          <circle class="knob" cx="108" cy="110" r="8"/><circle class="knob" cx="136" cy="110" r="8"/><circle class="knob" cx="164" cy="110" r="8"/>
+          <circle class="lit" cx="200" cy="110" r="3"/>
+          <path class="line" d="M28 132h180v28H28zM48 132v28M68 132v28M88 132v28M108 132v28M128 132v28M148 132v28M168 132v28M188 132v28"/>
+          <path class="signal" d="M220 130H318"/><path class="head" d="M318 125l9 5-9 5z"/>
+          <text x="270" y="118" text-anchor="middle">USB-C</text>
+          <rect class="part" x="330" y="32" width="94" height="196" rx="16"/>
+          <rect class="glass" x="342" y="48" width="70" height="26" rx="5"/>
+          <circle class="sunk" cx="377" cy="128" r="34"/><circle class="knob" cx="377" cy="128" r="29"/><circle class="dot" cx="377" cy="107" r="2.5"/>
+          <path class="line" d="M342 180h70M342 196h70M342 212h70" opacity="0.5"/>
+          <text x="118" y="196" text-anchor="middle">synth or drum machine</text>
+        </svg>
+        <figcaption class="legend">Straight in. Gear with USB audio needs one cable, and you listen on its headphone jack.</figcaption>
+      </figure>
+      <figure>
+        <svg viewBox="0 0 440 240" role="img" aria-label="A microphone connected to a USB audio interface, the interface connected to an iPhone, and headphones plugged into the interface.">
+          <rect class="part" x="22" y="92" width="28" height="48" rx="14"/>
+          <path class="line" d="M28 108h16M28 116h16M28 124h16"/><path class="line" d="M36 140v24M24 164h24"/>
+          <path class="signal" d="M50 116H108"/><path class="head" d="M108 111l9 5-9 5z"/>
+          <text x="80" y="104" text-anchor="middle">mic</text>
+          <rect class="part" x="120" y="84" width="140" height="64" rx="8"/>
+          <circle class="sunk" cx="142" cy="116" r="9"/><circle class="knob" cx="176" cy="116" r="10"/><circle class="knob" cx="208" cy="116" r="10"/>
+          <circle class="lit" cx="240" cy="104" r="3"/>
+          <text x="190" y="72" text-anchor="middle">USB audio interface</text>
+          <path class="signal" d="M260 116H318"/><path class="head" d="M318 111l9 5-9 5z"/>
+          <text x="290" y="104" text-anchor="middle">USB-C</text>
+          <path class="line" d="M190 148v30"/>
+          <path class="line" d="M172 208a18 18 0 0 1 36 0"/><rect class="part" x="166" y="204" width="10" height="18" rx="4"/><rect class="part" x="204" y="204" width="10" height="18" rx="4"/>
+          <text x="228" y="216">headphones</text>
+          <rect class="part" x="330" y="32" width="94" height="196" rx="16"/>
+          <rect class="glass" x="342" y="48" width="70" height="26" rx="5"/>
+          <circle class="sunk" cx="377" cy="128" r="34"/><circle class="knob" cx="377" cy="128" r="29"/><circle class="dot" cx="377" cy="107" r="2.5"/>
+          <path class="line" d="M342 180h70M342 196h70M342 212h70" opacity="0.5"/>
+        </svg>
+        <figcaption class="legend">Through an interface. For a mic or a guitar. Listen on headphones plugged into the interface.</figcaption>
+      </figure>
+    </div>
+    <p class="legend">Tracks are mono, so a stereo source is mixed to one channel.</p>
+  </section>
+
+  <section class="finishes">
+    <div class="intro">
+      <h2>Three finishes</h2>
+      <p>Light, Dark and Green. Orange means recording. Green means on.</p>
+    </div>
+    <div class="shots">
+      <figure><img src="img/iphone-light.png" width="598" height="1300" alt="Tapes in the Light finish: display, tape scale, two thumbwheels, three keys, the dial, four track keys and the transport."><figcaption class="legend">Light</figcaption></figure>
+      <figure><img src="img/iphone-dark.png" width="598" height="1300" alt="The same screen in the Dark finish."><figcaption class="legend">Dark</figcaption></figure>
+      <figure><img src="img/iphone-green.png" width="598" height="1300" alt="The same screen in the Green finish: a grey-green body with putty-coloured keys and dial."><figcaption class="legend">Green</figcaption></figure>
+    </div>
+  </section>
+
+  <footer>
+    <span class="legend">Tapes. iOS 18 or later.</span>
+  </footer>
+</div>
+
+<script>
+(function () {
+  var tabs = [document.getElementById("tab-phone"), document.getElementById("tab-pad")];
+  var shots = [document.getElementById("shot-phone"), document.getElementById("shot-pad")];
+  function pick(n) {
+    tabs.forEach(function (tab, i) { tab.setAttribute("aria-selected", i === n ? "true" : "false"); tab.tabIndex = i === n ? 0 : -1; });
+    shots.forEach(function (shot, i) { shot.hidden = i !== n; });
+  }
+  tabs.forEach(function (tab, i) {
+    tab.addEventListener("click", function () { pick(i); });
+    tab.addEventListener("keydown", function (e) {
+      if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+      var next = (i + 1) % tabs.length;
+      pick(next); tabs[next].focus(); e.preventDefault();
+    });
+  });
+  pick(0);
+})();
+</script>
+<!--/body-->
+</body>
+</html>

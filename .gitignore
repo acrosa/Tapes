@@ -1,0 +1,13 @@
+# Build output
+build/
+.build/
+DerivedData/
+
+# Generated from project.yml by `xcodegen generate`
+Spule.xcodeproj/
+
+# Xcode and macOS
+xcuserdata/
+*.xcuserstate
+.DS_Store
+.swiftpm/

@@ -1,0 +1,62 @@
+name: Spule
+options:
+  bundleIdPrefix: app.spule
+  deploymentTarget:
+    iOS: "18.0"
+  createIntermediateGroups: true
+packages:
+  GridKit:
+    path: Packages/GridKit
+  TapeEngine:
+    path: Packages/TapeEngine
+targets:
+  Spule:
+    type: application
+    platform: iOS
+    sources: [Spule]
+    dependencies:
+      - package: GridKit
+      - package: TapeEngine
+    settings:
+      base:
+        SWIFT_VERSION: "6.0"
+        DEVELOPMENT_TEAM: 49MWCX22SN
+        CODE_SIGN_STYLE: Automatic
+        TARGETED_DEVICE_FAMILY: "1,2"
+        PRODUCT_BUNDLE_IDENTIFIER: app.spule.recorder
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: 1
+        GENERATE_INFOPLIST_FILE: YES
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        INFOPLIST_KEY_CFBundleDisplayName: Tapes
+        INFOPLIST_KEY_NSMicrophoneUsageDescription: Tapes records the microphone onto the selected tape track.
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone: UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight
+        INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad: UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight
+        INFOPLIST_KEY_UIFileSharingEnabled: YES
+        INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace: YES
+  SpuleUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources: [SpuleUITests]
+    dependencies:
+      - target: Spule
+    settings:
+      base:
+        SWIFT_VERSION: "6.0"
+        DEVELOPMENT_TEAM: 49MWCX22SN
+        CODE_SIGN_STYLE: Automatic
+        PRODUCT_BUNDLE_IDENTIFIER: app.spule.recorder.uitests
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_TARGET_NAME: Spule
+schemes:
+  Spule:
+    build:
+      targets:
+        Spule: all
+        SpuleUITests: [test]
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets: [SpuleUITests]
