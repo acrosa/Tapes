@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy — Tapes</title>
+<meta name="description" content="Tapes collects nothing. Your recordings stay on your device.">
+<link rel="icon" href="img/icon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500&display=swap">
+<style>
+  /* Same sheet as the landing page: 12 columns, 4px baseline, every line height and gap a multiple of 8px. */
+  :root { --surface: #ECEAE4; --ink: #1A1A19; --ink-2: #5F5D57; --hairline: rgba(26, 26, 25, 0.12); --margin: 24px; --gutter: 16px; }
+  @media (prefers-color-scheme: dark) {
+    :root { --surface: #1C1C1B; --ink: #E9E7E1; --ink-2: #A09E98; --hairline: rgba(255, 255, 255, 0.12); color-scheme: dark; }
+  }
+  :root[data-finish="light"] { --surface: #ECEAE4; --ink: #1A1A19; --ink-2: #5F5D57; --hairline: rgba(26, 26, 25, 0.12); color-scheme: light; }
+  :root[data-finish="dark"] { --surface: #1C1C1B; --ink: #E9E7E1; --ink-2: #A09E98; --hairline: rgba(255, 255, 255, 0.12); color-scheme: dark; }
+  :root[data-finish="green"] { --surface: #5E6B64; --ink: #F1EFE4; --ink-2: #ECEADF; --hairline: rgba(241, 239, 228, 0.28); color-scheme: dark; }
+  @media (min-width: 720px) { :root { --margin: 48px; } }
+  * { box-sizing: border-box; margin: 0; }
+  body { background: var(--surface); color: var(--ink); font: 400 16px/24px "Geist", "Helvetica Neue", Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  main { max-width: 1200px; margin: 0 auto; padding: 48px var(--margin) 96px; display: grid; grid-template-columns: repeat(12, 1fr); column-gap: var(--gutter); }
+  main > * { grid-column: 1 / -1; }
+  @media (min-width: 720px) { main > * { grid-column: 1 / span 8; } }
+  @media (min-width: 1000px) { main > * { grid-column: 1 / span 6; } }
+  .home { font-size: 14px; line-height: 24px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink); text-decoration: none; margin-bottom: 72px; }
+  h1 { font-weight: 500; font-size: 40px; line-height: 48px; letter-spacing: -0.03em; margin-bottom: 24px; }
+  h2 { font-weight: 500; font-size: 16px; line-height: 24px; margin-top: 32px; padding-top: 16px; border-top: 1px solid var(--hairline); margin-bottom: 8px; }
+  p, li { color: var(--ink-2); }
+  p + p { margin-top: 8px; }
+  ul { padding-left: 16px; }
+  a { color: var(--ink); text-underline-offset: 4px; }
+  .lead { color: var(--ink); font-size: 20px; line-height: 32px; }
+  .date { margin-top: 48px; font-size: 14px; }
+</style>
+<script>try { var f = localStorage.getItem("tapes-finish"); if (f) document.documentElement.setAttribute("data-finish", f); } catch (e) {}</script>
+</head>
+<body>
+<main>
+  <a class="home" href="./">Tapes</a>
+  <h1>Privacy</h1>
+  <p class="lead">Tapes collects nothing. Your recordings stay on your iPhone or iPad.</p>
+
+  <h2>What the app does not do</h2>
+  <p>It has no accounts, no analytics, no ads and no tracking. It never connects to the internet, so nothing you record can leave your device unless you send it yourself.</p>
+
+  <h2>Microphone</h2>
+  <p>The app asks for the microphone so it can record. It listens only while you are recording, or while “Hear the input” is switched on. The sound goes onto your tape and nowhere else.</p>
+
+  <h2>Your tapes</h2>
+  <p>Tapes are saved in the app’s own folder on your device. They are included in your device backup if you have backups turned on. Deleting a tape, or deleting the app, removes them.</p>
+
+  <h2>Sharing</h2>
+  <p>When you press export, the app makes an audio file and hands it to the iOS share sheet. Where it goes from there is up to you.</p>
+
+  <h2>Settings and motion</h2>
+  <p>Your choice of finish, sound and haptics is stored on the device. The app reads the device’s tilt to move a reflection on the display. That reading is used on the spot and never stored.</p>
+
+  <h2>Children</h2>
+  <p>The app collects no data from anyone, children included.</p>
+
+  <h2>Questions</h2>
+  <p>Write to us through the <a href="support.html">support page</a>. If this policy changes, the new version will be posted here.</p>
+
+  <p class="date">Vibe Tapes is made by Alfajor LLC. Last updated 13 November 2026.</p>
+</main>
+</body>
+</html>

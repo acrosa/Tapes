@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Support — Tapes</title>
+<meta name="description" content="Help with Tapes, the four-track tape recorder for iPhone and iPad.">
+<link rel="icon" href="img/icon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500&display=swap">
+<style>
+  /* Same sheet as the landing page: 12 columns, 4px baseline, every line height and gap a multiple of 8px. */
+  :root { --surface: #ECEAE4; --ink: #1A1A19; --ink-2: #5F5D57; --hairline: rgba(26, 26, 25, 0.12); --margin: 24px; --gutter: 16px; }
+  @media (prefers-color-scheme: dark) {
+    :root { --surface: #1C1C1B; --ink: #E9E7E1; --ink-2: #A09E98; --hairline: rgba(255, 255, 255, 0.12); color-scheme: dark; }
+  }
+  :root[data-finish="light"] { --surface: #ECEAE4; --ink: #1A1A19; --ink-2: #5F5D57; --hairline: rgba(26, 26, 25, 0.12); color-scheme: light; }
+  :root[data-finish="dark"] { --surface: #1C1C1B; --ink: #E9E7E1; --ink-2: #A09E98; --hairline: rgba(255, 255, 255, 0.12); color-scheme: dark; }
+  :root[data-finish="green"] { --surface: #5E6B64; --ink: #F1EFE4; --ink-2: #ECEADF; --hairline: rgba(241, 239, 228, 0.28); color-scheme: dark; }
+  @media (min-width: 720px) { :root { --margin: 48px; } }
+  * { box-sizing: border-box; margin: 0; }
+  body { background: var(--surface); color: var(--ink); font: 400 16px/24px "Geist", "Helvetica Neue", Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  main { max-width: 1200px; margin: 0 auto; padding: 48px var(--margin) 96px; display: grid; grid-template-columns: repeat(12, 1fr); column-gap: var(--gutter); }
+  main > * { grid-column: 1 / -1; }
+  @media (min-width: 720px) { main > * { grid-column: 1 / span 8; } }
+  @media (min-width: 1000px) { main > * { grid-column: 1 / span 6; } }
+  .home { font-size: 14px; line-height: 24px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink); text-decoration: none; margin-bottom: 72px; }
+  h1 { font-weight: 500; font-size: 40px; line-height: 48px; letter-spacing: -0.03em; margin-bottom: 24px; }
+  h2 { font-weight: 500; font-size: 16px; line-height: 24px; margin-top: 32px; padding-top: 16px; border-top: 1px solid var(--hairline); margin-bottom: 8px; }
+  p, li { color: var(--ink-2); }
+  p + p { margin-top: 8px; }
+  ul { padding-left: 16px; }
+  a { color: var(--ink); text-underline-offset: 4px; }
+  .lead { color: var(--ink); font-size: 20px; line-height: 32px; }
+  .date { margin-top: 48px; font-size: 14px; }
+</style>
+<script>try { var f = localStorage.getItem("tapes-finish"); if (f) document.documentElement.setAttribute("data-finish", f); } catch (e) {}</script>
+</head>
+<body>
+<main>
+  <a class="home" href="./">Tapes</a>
+  <h1>Support</h1>
+  <p class="lead">Something not working, or a question about the app? <a href="https://github.com/acrosa/Tapes/issues">Open an issue</a> and we will answer there.</p>
+
+  <h2>I hear nothing when I record a USB instrument</h2>
+  <p>While a take is running, iOS sends sound out through the instrument, not the speaker. Plug headphones or a speaker into the instrument to hear yourself. When you stop, playback returns to the speaker.</p>
+
+  <h2>The app says “No input”</h2>
+  <p>Allow the microphone in Settings → Privacy &amp; Security → Microphone. If an instrument is plugged in, check that it is switched on and that its USB audio is enabled.</p>
+
+  <h2>How do I clear a track?</h2>
+  <p>Touch and hold the track’s key and choose Erase. To start over, open the tapes list with the gear and add a new tape.</p>
+
+  <h2>How does the loop work?</h2>
+  <p>Add cues where a section starts and ends, then switch loop on. The app repeats the section the playhead is in. Touch another section on the scale to move the loop there.</p>
+
+  <h2>How do I get my recording out?</h2>
+  <p>Press export. The app mixes the four tracks into one audio file and opens the share sheet. Your tapes are also in the Files app under Vibe Tapes.</p>
+
+  <h2>Privacy</h2>
+  <p>The app collects nothing. Read the <a href="privacy.html">privacy policy</a>.</p>
+</main>
+</body>
+</html>
