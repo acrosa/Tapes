@@ -1,6 +1,6 @@
 # Tapes — motion and haptics spec
 
-Tokens: `Motion` and `Haptics` in `Spule/Design/Theme.swift`. Tape physics: `TapeCore` in `Packages/TapeEngine`.
+Tokens: `Motion` and `Haptics` in `Tapes/Design/Theme.swift`. Tape physics: `TapeCore` in `Packages/TapeEngine`.
 
 ## Principles
 
@@ -16,6 +16,7 @@ Tokens: `Motion` and `Haptics` in `Spule/Design/Theme.swift`. Tape physics: `Tap
 | --- | --- | --- |
 | `Motion.press` | spring, response 0.18, damping 0.62 | a key travelling down and back; wheels and fader caps being gripped; the dial being held |
 | `Motion.settle` | spring, response 0.36, damping 0.82 | a control returning to rest (wheel reset); the record dot changing size |
+| `Motion.fold` | spring, response 0.4, damping 0.9 | the two panes moving apart or together, or their rows opening around the fold, as iPhone Duo is folded or opened flat; off with Reduce Motion |
 | `Motion.lamp` | ease-out, 0.12 s | lamps, text-key dimming |
 | `Motion.readout` | ease-in-out, 0.16 s | words cross-fading in the display |
 | `Motion.readoutHold` | 1.4 s | how long a readout replaces the transport state |
@@ -61,7 +62,7 @@ Change the feel by changing these constants, not by adding animation in the view
 
 ## Tilt
 
-The device's motion sensor lights the faceplate (`Tilt` in `Spule/Design/Tilt.swift`). It is the one
+The device's motion sensor lights the faceplate (`Tilt` in `Tapes/Design/Tilt.swift`). It is the one
 place the interface moves without being touched, and it moves only because the device did.
 
 | Part | Behaviour |
@@ -91,8 +92,9 @@ All through `Haptics`, which the Haptics preference can turn off.
 | Value snaps into a detent: speed 0.5×, 1× or 2×, pan centre, level 100 %, either end of a range | rigid impact, 0.5 (`Haptics.snap`) |
 | Hard stop: start of tape while scrubbing, tape stopped itself, an action refused | rigid impact, 1.0 (`Haptics.stop`) |
 
-A refused action (moving the dial while recording, switching the loop on with nothing recorded, export of an empty tape)
-gives the hard-stop haptic and nothing else. No alert, no shake.
+A refused action (moving the dial while recording, export of an empty tape) gives the hard-stop
+haptic. Where the reason is not obvious the display says it for a moment ("NOTHING TO LOOP",
+"NO INPUT"). No alert, no shake.
 
 ## Reduce Motion
 

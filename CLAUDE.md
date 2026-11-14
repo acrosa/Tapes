@@ -15,21 +15,24 @@ If a change contradicts one of these, change the document in the same commit.
 
 ```sh
 xcodegen generate                                   # after adding, moving or removing files
-xcodebuild -project Spule.xcodeproj -scheme Spule \
+xcodebuild -project Tapes.xcodeproj -scheme Tapes \
   -destination 'platform=iOS Simulator,name=iPhone 18 Pro' -derivedDataPath build build
 (cd Packages/TapeEngine && swift test)              # tape transport and mix, no device needed
 (cd Packages/GridKit && swift test)                 # grid arithmetic
-xcodebuild -project Spule.xcodeproj -scheme Spule \
+xcodebuild -project Tapes.xcodeproj -scheme Tapes \
   -destination 'platform=iOS Simulator,name=iPhone 18 Pro' -derivedDataPath build test   # end-to-end UI tests (about 4 minutes)
 ```
 
-`Spule.xcodeproj` is generated from `project.yml`. Edit `project.yml`, never the project file.
+`Tapes.xcodeproj` is generated from `project.yml`. Edit `project.yml`, never the project file.
 
 Debug launch arguments: `-seedDemoTape` fills an empty tape with synthetic notes, cues and a loop;
 `-autoplay` starts playback after loading; `-showsGrid YES` draws the layout grid;
 `-resetTapes` empties the shelf first (the UI tests use it); `-showTapes` opens the tapes sheet;
 `-tiltX` and `-tiltY` (0 to 1; a negative value is misread as a flag) fix the tilt that lights the glass;
-`-landscape` turns the window on its side (the way to check landscape in a simulator).
+`-routeProbe` (device only) prints how iOS routes sound under each strategy with whatever is plugged in;
+`-autorecord` (simulator only) starts a take after loading, for store screenshots;
+`-landscape` turns the window on its side (the way to check landscape in a simulator); `-portrait` turns it upright;
+`-fold 0.55` stands in for iPhone Duo's fold at that fraction of the two-pane layout's longer side.
 
 ## Layout of the code
 
@@ -37,14 +40,18 @@ Debug launch arguments: `-seedDemoTape` fills an empty tape with synthetic notes
 | --- | --- |
 | `Packages/GridKit` | Local package. Baseline unit (`Rhythm`), column grid (`ColumnGrid`, `GridContainer`, `UnitRow`), row grid (`RowGrid`), rhythm-locked type (`TypeSpec`, `.rhythm()`), the on-grid check (`.gridChecked()`), debug `GridOverlay`. Its README is the layout contract. No third-party "GridKit" exists for this; this one is ours. |
 | `Packages/TapeEngine` | Local package, pure Swift. `TapeCore`: the tape in memory, the playhead, render, record, loop, click, bounce. |
-| `Spule/Audio/AudioIO.swift` | AVAudioEngine and AVAudioSession around `TapeCore`. |
-| `Spule/Model/Recorder.swift` | The one `@Observable` model. Every control action is a method here. |
-| `Spule/Model/Tape.swift` | `TapeMeta` and `TapeStore` (disk format). |
-| `Spule/Design/Theme.swift` | All tokens: `Palette`, `Typo`, `Motion`, `Haptics`. |
-| `Spule/Fonts` | Geist Mono (in use) and Geist, with the Open Font License. Registered at launch. |
-| `Spule/Views` | The faceplate and its parts. |
+| `Tapes/Audio/AudioIO.swift` | AVAudioEngine and AVAudioSession around `TapeCore`. |
+| `Tapes/Model/Recorder.swift` | The one `@Observable` model. Every control action is a method here. |
+| `Tapes/Model/Tape.swift` | `TapeMeta` and `TapeStore` (disk format). |
+| `Tapes/Design/Theme.swift` | All tokens: `Palette`, `Typo`, `Motion`, `Haptics`. |
+| `Tapes/Fonts` | Geist Mono (in use) and Geist, with the Open Font License. Registered at launch. |
+| `Tapes/Views` | The faceplate and its parts. |
 | `web` | The landing page: one static `index.html` and its images. No build step. |
-| `SpuleUITests` | End-to-end tests that drive the app through its controls on the seeded demo tape. A change to a control's behaviour needs its test changed or added here. |
+| `appstore` | Store listing text (`README.md`), the framed screenshots for both required sizes, the product page header and search artwork, and the scripts that compose them. |
+| `.claude/skills/appstore-release` | A copy of the general `appstore-release` skill (also installed in `~/.claude/skills`): version, listing text, screenshots, artwork, archive, submission sheet. What is particular to this app is in `appstore/NOTES.md`. |
+| `Shared` | Code compiled into both the app and the Live Activity extension: `RecordingAttributes` and `LiveTheme`. |
+| `TapesLive` | The widget extension that draws the recording Live Activity (Lock Screen and Dynamic Island). |
+| `TapesUITests` | End-to-end tests that drive the app through its controls on the seeded demo tape. A change to a control's behaviour needs its test changed or added here. |
 
 ## Rules
 
@@ -57,6 +64,7 @@ Debug launch arguments: `-seedDemoTape` fills an empty tape with synthetic notes
 - Text on the faceplate uses `.faceType(.role)`. Do not call `.font()` on faceplate text.
 - Sizes that differ between iPhone and iPad come from `Metrics` (in `Theme.swift`), read from the environment. Do not branch on the device in a view.
 - Check all four layouts (iPhone upright and on its side, iPad upright and on its side) with the grid overlay on before calling layout work done.
+- iPhone Duo is two more screens: closed (466 × 678, compact, `Metrics.short`) and open (669 × 951, the two-pane layout at phone sizes). A freshly booted Duo simulator is closed; `simctl io <device> screenshot --display=LCD` captures the outer display and `--display=LCD-1` the inner. Opening it or turning the inner display takes Device Hub (`Xcode.app/Contents/Applications/DeviceHub.app`); there is no command for it. Half open, the two panes stand either side of the fold, or break their rows at it when the device is upright (`Fold` in `FaceplateView.swift`); a layout change there must stay one view tree so the move animates.
 
 **Design**
 - There are three finishes (Light, Dark, Green). Text on a key or in a well uses `Palette.ink`/`inkSecondary`; text on the faceplate itself uses `Palette.label`/`legend`. Check a visual change in all three.
@@ -77,4 +85,4 @@ Debug launch arguments: `-seedDemoTape` fills an empty tape with synthetic notes
 
 **Scope**
 - Views do not touch `TapeCore` except to read `recorder.position` and track lengths for drawing.
-- The app is called Tapes (it was Spule; the Xcode target, folders and scheme still carry the old name, and stay that way unless a rename is asked for). Its bundle identifier is `co.alfajor.tapes`. It has its own design. It is inspired by Reel's feature set, not a copy of its interface: do not reproduce Reel's name, artwork or layout.
+- The app is called Tapes ("Vibe Tapes" on the App Store and under its icon; it began as Spule). Its bundle identifier is `co.alfajor.tapes`. It has its own design. It is inspired by Reel's feature set, not a copy of its interface: do not reproduce Reel's name, artwork or layout.

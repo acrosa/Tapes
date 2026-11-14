@@ -1,4 +1,4 @@
-name: Spule
+name: Tapes
 options:
   bundleIdPrefix: co.alfajor
   deploymentTarget:
@@ -10,13 +10,19 @@ packages:
   TapeEngine:
     path: Packages/TapeEngine
 targets:
-  Spule:
+  Tapes:
     type: application
     platform: iOS
-    sources: [Spule]
+    sources: [Tapes, Shared]
+    # Keys the build settings cannot express. Merged with the generated Info.plist.
+    info:
+      path: Tapes/Info.plist
+      properties:
+        UIBackgroundModes: [audio]
     dependencies:
       - package: GridKit
       - package: TapeEngine
+      - target: TapesLive
     settings:
       base:
         SWIFT_VERSION: "6.0"
@@ -24,24 +30,52 @@ targets:
         CODE_SIGN_STYLE: Automatic
         TARGETED_DEVICE_FAMILY: "1,2"
         PRODUCT_BUNDLE_IDENTIFIER: co.alfajor.tapes
-        MARKETING_VERSION: "0.1.0"
+        MARKETING_VERSION: "1.1"
         CURRENT_PROJECT_VERSION: 1
         GENERATE_INFOPLIST_FILE: YES
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         INFOPLIST_KEY_CFBundleDisplayName: Vibe Tapes
-        INFOPLIST_KEY_NSMicrophoneUsageDescription: Vibe Tapes records the microphone onto the selected tape track.
+        INFOPLIST_KEY_NSMicrophoneUsageDescription: Vibe Tapes records the microphone, or an instrument you plug in, onto the selected tape track.
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
         INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone: UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight
         INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad: UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight
         INFOPLIST_KEY_UIFileSharingEnabled: YES
         INFOPLIST_KEY_ITSAppUsesNonExemptEncryption: NO
+        INFOPLIST_KEY_NSSupportsLiveActivities: YES
         INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace: YES
-  SpuleUITests:
+  TapesLive:
+    type: app-extension
+    platform: iOS
+    sources:
+      - TapesLive
+      - Shared
+      - path: Tapes/Fonts
+        includes: ["GeistMono-*.otf"]
+    info:
+      path: TapesLive/Info.plist
+      properties:
+        CFBundleDisplayName: Vibe Tapes
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        UIAppFonts: [GeistMono-Light.otf, GeistMono-Regular.otf, GeistMono-Medium.otf]
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    settings:
+      base:
+        SWIFT_VERSION: "6.0"
+        DEVELOPMENT_TEAM: 49MWCX22SN
+        CODE_SIGN_STYLE: Automatic
+        TARGETED_DEVICE_FAMILY: "1,2"
+        PRODUCT_BUNDLE_IDENTIFIER: co.alfajor.tapes.live
+        MARKETING_VERSION: "1.1"
+        CURRENT_PROJECT_VERSION: 1
+        SKIP_INSTALL: YES
+  TapesUITests:
     type: bundle.ui-testing
     platform: iOS
-    sources: [SpuleUITests]
+    sources: [TapesUITests]
     dependencies:
-      - target: Spule
+      - target: Tapes
     settings:
       base:
         SWIFT_VERSION: "6.0"
@@ -49,15 +83,15 @@ targets:
         CODE_SIGN_STYLE: Automatic
         PRODUCT_BUNDLE_IDENTIFIER: co.alfajor.tapes.uitests
         GENERATE_INFOPLIST_FILE: YES
-        TEST_TARGET_NAME: Spule
+        TEST_TARGET_NAME: Tapes
 schemes:
-  Spule:
+  Tapes:
     build:
       targets:
-        Spule: all
-        SpuleUITests: [test]
+        Tapes: all
+        TapesUITests: [test]
     run:
       config: Debug
     test:
       config: Debug
-      targets: [SpuleUITests]
+      targets: [TapesUITests]

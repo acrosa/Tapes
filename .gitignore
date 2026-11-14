@@ -4,7 +4,7 @@ build/
 DerivedData/
 
 # Generated from project.yml by `xcodegen generate`
-Spule.xcodeproj/
+Tapes.xcodeproj/
 
 # Xcode and macOS
 xcuserdata/

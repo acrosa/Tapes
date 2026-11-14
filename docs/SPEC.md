@@ -1,6 +1,6 @@
 # Tapes — product spec
 
-Version 0.1. iPhone (portrait and landscape) and iPad (all orientations), iOS 18 or later.
+Version 0.1. iPhone (portrait and landscape), iPhone Duo (closed and open) and iPad (all orientations), iOS 18 or later.
 
 ## The idea
 
@@ -67,9 +67,11 @@ Press to mark the playhead position. Press again while resting on a mark to remo
 
 ### Loop key
 On or off. On, the tape repeats the section the playhead is in: from the mark before it to the mark
-after it. Cues are the marks, along with the start of the tape and the end of the recording, so with
-no cues the whole recording loops. The display shows the range ("LOOP 0:04–0:06") and the scale shows
-it as a green band. To loop a different section, switch the loop off, move the tape, switch it on.
+after it. Cues are the marks, along with the start of the tape and the end of the recording.
+
+- The display names the section: "LOOP START–CUE 1", "LOOP CUE 1–CUE 2", "LOOP CUE 2–END", or "LOOP ALL" when there are no cues. The scale shows it as a green band.
+- With the loop on, touching a section on the tape scale, or jumping to a cue, moves the loop to that section. A loop is chosen by pointing at it.
+- On an empty tape the key refuses and the display reads "NOTHING TO LOOP".
 
 ### Track keys (iPhone) and channel strips (iPad)
 | Gesture | Result |
@@ -90,11 +92,49 @@ On regular widths each track gets a full strip instead: select key, pan wheel, f
 
 The first press of Record asks for the microphone. If it is refused, an alert offers Settings.
 
+### Sound in and out (in the sheet behind the gear)
+iOS offers a USB instrument that has both an input and an output (a Roland T-8, an audio interface)
+only as a pair: record from it and play through it, or use the built-in microphone and speaker.
+Measured on an iPad with a T-8 using `-routeProbe`: forcing the speaker switches the input to the
+microphone, and naming the USB input switches the output back to the instrument. No combination
+gives USB in and speaker out. The settings work within that.
+
+The rule, with Input on Automatic:
+
+- Something plugged in that can be recorded from: record from it; between takes play back through the speaker (if that setting is on).
+- Nothing plugged in: the built-in microphone and the speaker, and the route is left alone.
+
+If the input is not there when record is pressed, the tape does not roll: the display reads "NO INPUT".
+
+| Setting | What it does |
+| --- | --- |
+| Input | Automatic (iOS chooses, preferring what was plugged in last), or any input on offer. A chosen input that is no longer plugged in counts as Automatic. So the microphone can be recorded while an instrument stays connected. |
+| Play back through the speaker | Between takes, sound comes from the device's own speaker, so a tape can be heard without unplugging. For the length of a take the sound moves to the instrument, because that is the only way to record from it. On by default. It only acts when an input is plugged in, so headphones on a USB adapter are left alone. |
+| Hear the input | Passes the input through to the output, live. Silent from the built-in microphone to the built-in speaker (feedback), and silent back into the instrument the input came from (it already plays itself; the copy would be late). Useful for an input with no output of its own, such as a USB microphone. |
+
+To hear the instrument and the tape while recording, and so to overdub, headphones or a speaker go
+on the instrument's own output. The sheet names the input and output in use.
+Tracks are mono: a stereo input is summed. There is no MIDI.
+
+### When the microphone is on
+Only when it is needed: for the length of a take, and while "Hear the input" is switched on.
+The rest of the time the input is disconnected, so iOS shows no microphone indicator while the tape
+sits or plays. If the app leaves the foreground with the tape at rest, it stops all audio and
+releases the audio session until it returns.
+
+### Recording in the background
+Recording carries on when the app leaves the foreground or the device is locked (the audio
+background mode). While it does, a Live Activity shows it on the Lock Screen and in the Dynamic
+Island: the record lamp, "REC" and the track, the tape's name, and the counter running. It is drawn
+as the display window in miniature, dark glass with light print, whatever finish the app is in.
+Tapping it opens the app; it has no controls of its own. It ends when recording stops, including
+when the tape runs out. The first time, iOS asks whether to allow Live Activities.
+
 ### Header
 - **The gear** at the top left opens the shelf: open, create, rename (swipe), delete (swipe). Also holds the finish (Light, Dark or Green, each shown as a small preview tile), Haptics, and Show layout grid.
 - **export** mixes the tape to a stereo WAV with the current mix and speed and opens the share sheet.
 
-Tape folders are also visible in the Files app (`Spule/Tapes/<id>/track1.wav` …).
+Tape folders are also visible in the Files app (`Tapes/Tapes/<id>/track1.wav` …).
 
 ## Compared with Reel
 
@@ -119,6 +159,6 @@ loop-point editing by dragging, undo for a take.
 ## Known limits
 
 - Without headphones the microphone hears the speaker, so overdubs pick up the other tracks.
-- External audio: the app records from whatever input iOS has selected, so a class-compliant USB interface, USB microphone or instrument with USB audio becomes the input when plugged in, summed to mono. There is no input picker and no input monitoring; listen through the interface. Not yet tested with real hardware.
+- External audio is untested with real hardware beyond one report with a Roland T-8 (see Sound, below).
 - Take placement uses the latency the system reports. It has not been calibrated per device.
 - Export writes the whole tape, not just the loop.

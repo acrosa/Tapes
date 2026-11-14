@@ -1,6 +1,6 @@
 # Tapes — design spec
 
-Tokens live in `Spule/Design/Theme.swift`; grid code in `Packages/GridKit`. This document is the
+Tokens live in `Tapes/Design/Theme.swift`; grid code in `Packages/GridKit`. This document is the
 reasoning and the reference. If a number here and a number in code disagree, fix one of them.
 
 ## Principles
@@ -26,10 +26,10 @@ Taken from the Braun audio line (SK 4, T 1000, the wall units) and the Bauhaus b
 
 | Container | Columns | Margin | Gutter | Devices |
 | --- | --- | --- | --- | --- |
-| under 600 wide | 12 | 24 | 16 | iPhone upright, iPad in a narrow split |
-| compact height | 24 | 16 | 16 | iPhone on its side |
-| 600 to 899 wide | 24 | 32 | 16 | iPad portrait |
-| 900 and up | 24 | 40 | 16 | iPad landscape |
+| under 600 wide | 12 | 24 | 16 | iPhone upright, iPhone Duo closed, iPad in a narrow split |
+| compact height | 24 | 16 | 16 | iPhone on its side, iPhone Duo closed and on its side |
+| 600 to 899 wide | 24 | 32 | 16 | iPad portrait, iPhone Duo open (upright) |
+| 900 and up | 24 | 40 | 16 | iPad landscape, iPhone Duo open (the way it opens) |
 
 The columns are fine (about 15pt on iPhone, 17 to 30 on iPad) and controls are sized in whole columns:
 
@@ -41,7 +41,9 @@ Rows of controls are placed with `UnitRow(units:spacing:)`, which gives each chi
 columns. The control row is `[3, 3, 2, 2, 2]`: twelve columns, so every control starts and ends on a
 column edge. No control is centred in a space wider than itself, and no group is divided by eye.
 
-Insets inside a part (display, tape scale, track key) are 16pt. Header words sit flush with the margins.
+Insets inside a part (display, tape scale, track key) are 16pt.
+
+Sections are 16pt apart (24 on iPad). A section of keys (the control row, the track keys, the transport) gets 8pt more above it (`Metrics.sectionLead`), so the readouts, the dial and each group of keys read as separate groups. Header words sit flush with the margins.
 
 ### Layouts
 **Compact** (one column of sections, top to bottom). The stack's height is snapped down to 8pt and
@@ -57,10 +59,32 @@ hangs from the top, so every edge is on the baseline grid, the dial's included.
 | Track keys | 72 | 3 each |
 | Transport | 64 | return 3, record 3, play 6 |
 
-**Regular** (iPad). The faceplate is built larger here (`Metrics.large`, below): on a big screen
+On a short screen (under 700pt of height: iPhone Duo closed, at 466 × 678, and the smallest
+iPhones) the faceplate is built `Metrics.short`: sections 12 apart with 4 of lead, the display 96,
+the transport 56. The dial gets the 60pt they give back; without it the dial is too small to turn.
+
+A legend never widens its key. On the narrowest columns (Duo closed and on its side, where a key
+of two columns is 32pt) the word hangs evenly into the gutters either side.
+
+**Regular** (iPad, and iPhone Duo open). The faceplate is built larger here (`Metrics.large`, below): on a big screen
 the phone's sizes look lost. Two panes, top-aligned, height snapped to 8pt, status bar hidden
 (it would print the app's name at the top left). The split follows the screen's shape so neither
-pane is left empty:
+pane is left empty. iPhone Duo's inner display (669 × 951) is regular both ways too, but it is two
+phones wide, not a tablet: it gets the two panes and the mixer at the phone's sizes
+(`Metrics.large` starts at a shorter side of 720pt), and keeps its status bar, which the system
+puts down the side.
+
+Each pane is a grid of its own, cut from the faceplate's columns (`GridContainer(grid:)`), so its
+parts are checked against the pane they sit in. While iPhone Duo is half open, the system reports
+the fold as a band to keep clear (`reservedRegions(kind: .division)`, 40pt wide at the middle of
+the display). The panes then move apart to stand either side of it, twelve columns each, and
+nothing is drawn across the fold; the left pane is the wider one, because the status bar takes a
+strip from the right. Opened flat, the band is inactive and the panes close up to one gutter. The
+move is sprung (`Motion.fold`). Half open and turned upright, the fold runs across the screen instead. The panes stay where they
+are and their rows break at it: header, display, tape scale, wheels and keys above; the dial and
+transport below, the dial smaller. In each mixer strip the select key and pan wheel stay above
+and the fader, mute and solo start below. Both edges of the break are on the baseline grid.
+`-fold 0.55` (debug builds) stands in for a fold at that fraction of the longer side.
 
 | | Left pane | Right pane |
 | --- | --- | --- |
@@ -107,17 +131,22 @@ Layout work is checked against it on all three layouts. With the overlay on, any
 
 Geist Mono (Vercel) throughout: every character the same width, like the print on a meter or a
 typewritten label. Figures never shift as they change. Light, Regular and Medium are bundled in
-`Spule/Fonts` with their SIL Open Font License and registered at launch by `Typo.registerFonts()`.
+`Tapes/Fonts` with their SIL Open Font License and registered at launch by `Typo.registerFonts()`.
 (The proportional Geist files are still in the folder from before the switch and are not used.)
 
 | Role | Face | iPhone size / line | iPad size / line | Use |
 | --- | --- | --- | --- | --- |
 | `counter` | Light | 48 / 56 | 64 / 72 | tape counter |
+| `counterSmall` | Light | 40 / 56 | 56 / 72 | tape counter where the display is too narrow for the full size |
 | `numeral` | Medium | 17 / 24 | 22 / 28 | track numbers |
 | `status` | Medium | 12 / 16 | 15 / 20 | display state, uppercase |
 | `caption` | Regular | 12 / 16 | 15 / 20 | display second line, "export" |
 | `legend` | Regular | 12 / 16 | 13 / 20 | faceplate legends, lowercase |
 | scale | Regular | 10 | 12 | scale numerals (Canvas) |
+
+The counter is never cut short. Where the display window is narrow, the level meter drops from 16
+perforations to 12, then to 8 with `counterSmall` (iPhone Duo closed and on its side). A status
+word too long for what is left shrinks to no less than three quarters of its size.
 
 Text is set with `.faceType(role)`, which picks the size from the faceplate's `Metrics`.
 
@@ -181,7 +210,8 @@ No gradients other than the key highlight and the reflection on the display glas
 
 - **Key** (`KeyStyle`): raised face, legend printed beneath, optional lamp on the face. Minimum touch height 48.
 - **Lamp**: 8pt dot. Off is `recess`; on is `lamp` green (orange on anything that is recording) with a soft glow of its own colour.
-- **App icon**: the dial seen from above on the faceplate colour, with its orange index mark. Light and dark versions in `Spule/Assets.xcassets`.
+- **Live Activity** (`TapesLive`): the display window in miniature. Glass background, record lamp and "REC n" in orange, the tape's name in dim print, the counter in Geist Mono Light (40pt on the Lock Screen). In the Dynamic Island: the lamp alone when minimal, lamp and counter when compact. Its colours are in `LiveTheme`, shared with the app.
+- **App icon**: the dial seen from above on the faceplate colour, with its orange index mark. Light and dark versions in `Tapes/Assets.xcassets`.
 - **Wheel**: a thumbwheel. A sunken slot as wide as its module and as tall as a key face (48) holds a raised roller with ridges every 4pt. A 16pt gutter beside the roller carries an ink mark for the value and a thin line for the rest position, if there is one. It is rolled along its axis: up and down for speed and tempo, sideways for pan. It holds at detents (see `MOTION.md`). There are no rotary knobs: a control's shape must show the gesture that works it, and a finger cannot twist a small circle on glass.
 - **Dial**: sunken well, 8pt rim, raised platter with 60 ticks (every fifth longer), one groove, an orange index mark, and a flush spindle that does not turn.
 - **Track key**: number top left, lamp bottom left, an 8pt level slot on the right, all inset 16 (grey fill is fader position, dark fill is live level).
@@ -193,6 +223,6 @@ No gradients other than the key highlight and the reflection on the display glas
 
 - Every control has a spoken label and value. Wheels, faders, track keys, the scale and the dial are adjustable with VoiceOver swipes.
 - State is never carried by colour alone: lamps pair with position, words in the display, or a legend ("mute", "solo").
-- Touch targets are at least 44pt, except mute and solo keys on the narrowest iPad strips (48pt tall, about 33pt wide).
+- Touch targets are at least 44pt, except mute and solo keys on the narrowest iPad strips (48pt tall, about 33pt wide), the strips on iPhone Duo open and upright (about 36pt wide), and the click, cue and loop keys on iPhone Duo closed and on its side (32pt wide, a band tall).
 - Known gap: faceplate text does not scale with Dynamic Type. Large Content Viewer support is the planned answer.
 - Contrast (WCAG ratio, computed): `legend` on `surface` 4.56 in Light and 5.27 in Dark; `displayDim` on `glass` 4.73 and 4.59; `ink` on `surface` 14.5 in Light. Green's `legend` on `surface` is about 4.8 by the same formula; its other pairs have not been computed.

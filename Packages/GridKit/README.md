@@ -33,7 +33,7 @@ If a part cannot be on the grid (a circle centred in its pane), say so in code w
 | `TypeSpec`, `.rhythm()` | A type style with its line height locked to the baseline. |
 | `ColumnGrid` | Columns, margin and gutter for a width: `adaptive(width:)`, `span(n)`, `x(ofColumn:)`. |
 | `RowGrid` | Bands of equal height for a given height: `fitting(height:rows:)`, `span(n)`, `y(ofRow:)`. |
-| `GridContainer` | Measures the width, publishes the `ColumnGrid` in the environment, applies the margins, draws the overlay. |
+| `GridContainer` | Measures the width, publishes the `ColumnGrid` in the environment, applies the margins, draws the overlay. `GridContainer(grid:)` takes a grid you give it instead: a pane laid out apart from its neighbour (one side of a fold), whose parts are then checked against that pane's columns. |
 | `UnitRow` | A row whose children each take a whole number of columns. |
 | `.gridChecked()` | Marks a view as required to be on the grid. |
 | `GridOverlay` | The columns and baselines drawn over the screen. |

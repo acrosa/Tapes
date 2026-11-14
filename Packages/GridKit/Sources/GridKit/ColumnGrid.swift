@@ -66,17 +66,29 @@ public extension EnvironmentValues {
 public struct GridContainer<Content: View>: View {
     private let showsOverlay: Bool
     private let compactHeight: Bool
+    private let fixed: ColumnGrid?
     private let content: (ColumnGrid) -> Content
     @State private var width: CGFloat = 0
 
     public init(showsOverlay: Bool = false, compactHeight: Bool = false, @ViewBuilder content: @escaping (ColumnGrid) -> Content) {
         self.showsOverlay = showsOverlay
         self.compactHeight = compactHeight
+        self.fixed = nil
+        self.content = content
+    }
+
+    /// A container with a grid of its own instead of the adaptive one: a pane that is laid out
+    /// apart from its neighbour (one side of a fold). Checked parts inside it are measured
+    /// against this grid, and the overlay draws it.
+    public init(grid: ColumnGrid, showsOverlay: Bool = false, @ViewBuilder content: @escaping (ColumnGrid) -> Content) {
+        self.showsOverlay = showsOverlay
+        self.compactHeight = false
+        self.fixed = grid
         self.content = content
     }
 
     public var body: some View {
-        let grid = ColumnGrid.adaptive(width: width, compactHeight: compactHeight)
+        let grid = fixed ?? ColumnGrid.adaptive(width: width, compactHeight: compactHeight)
         content(grid)
             .padding(.horizontal, grid.margin)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
