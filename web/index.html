@@ -130,14 +130,10 @@
   .pitch { grid-column: 1 / span 7; display: flex; flex-direction: column; gap: 24px; padding-top: 48px; }
   .pitch h1 { font-weight: 300; font-size: 88px; line-height: 96px; letter-spacing: -0.04em; text-wrap: balance; }
   .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 8px; }
-  .store {
-    display: flex; align-items: center; height: 48px; padding: 0 20px; border-radius: 10px;
-    color: var(--ink); text-decoration: none; box-shadow: inset 0 0 0 1px var(--hairline);
-  }
-  .store:hover { box-shadow: inset 0 0 0 1px var(--ink-2); }
+  .store { display: block; height: 48px; border-radius: 9px; }
+  .store img { display: block; height: 48px; width: auto; }
+  .store:hover { opacity: 0.85; }
   .store:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
-  .store span { display: flex; flex-direction: column; font-size: 15px; line-height: 20px; letter-spacing: -0.01em; }
-  .store small { font-size: 10px; line-height: 12px; letter-spacing: 0.01em; color: var(--ink-2); }
   .source {
     display: flex; align-items: center; height: 48px; padding: 0 20px; border-radius: 10px;
     font-size: 15px; line-height: 20px; letter-spacing: -0.01em; color: var(--ink); text-decoration: none;
@@ -260,7 +256,7 @@
       <h1>A four-track tape recorder for iPhone and iPad.</h1>
       <div class="actions">
         <a class="store" href="https://apps.apple.com/us/app/vibe-tapes/id6834562677" aria-label="Download Vibe Tapes on the App Store">
-          <span><small>Download on the</small>App Store</span>
+          <img src="img/app-store-badge.svg" width="162" height="48" alt="Download on the App Store">
         </a>
         <a class="source" href="https://github.com/acrosa/Tapes">Get the source</a>
       </div>
