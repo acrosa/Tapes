@@ -51,7 +51,7 @@ hangs from the top, so every edge is on the baseline grid, the dial's included.
 
 | Section | Height | Columns |
 | --- | --- | --- |
-| Header | 32 | a gear flush left (tapes and settings), scissors two columns along (they lift the faceplate for cutting), "export" flush right |
+| Header | 32 | a gear flush left (tapes and settings), scissors two columns along (they lift the faceplate for cutting), headphones with a lamp two columns after that (hear a plugged-in instrument; only shown when that is possible, fading in and out), "export" flush right |
 | Display | 112 | 12 |
 | Tape scale | 56 | 12 |
 | Control row | 72 | speed 3, tempo 3, click 2, cue 2, loop 2 |

@@ -292,12 +292,34 @@ struct HeaderBar: View {
             .accessibilityHint("Shows the tape as pieces you can cut, move and remove")
             .buttonStyle(TextKeyStyle(alignment: .leading))
             .disabled(recorder.tape.duration == 0 || recorder.isBusy || recorder.transport == .recording)
+            // Like the gear, the scissors take two columns and their gutter, so the headphones start on a column.
+            .frame(width: grid.span(2) + grid.gutter, alignment: .leading)
+            // The headphones: a plugged-in instrument is heard through this device. They are only
+            // there when that can happen (an instrument in, headphones on), and the lamp shows it is on.
+            let _ = recorder.routeRevision      // the switch itself is stored outside the model
+            if recorder.canHearInput {
+                Button { recorder.toggleHearsInput() } label: {
+                    HStack(spacing: Rhythm.u(1)) {
+                        Image(systemName: "headphones")
+                            .font(.system(size: metrics.glyph - 1, weight: .regular))
+                            .foregroundStyle(Palette.legend)
+                        Lamp(on: recorder.hearsInput)
+                    }
+                }
+                .accessibilityLabel("Hear the input")
+                .accessibilityValue(recorder.hearsInput ? "On" : "Off")
+                .accessibilityHint("Plays the plugged-in instrument in your headphones")
+                .accessibilityIdentifier("hear")
+                .buttonStyle(TextKeyStyle(alignment: .leading))
+                .transition(.opacity)
+            }
             Spacer(minLength: 0)
             Button("export") { recorder.export() }
                 .buttonStyle(TextKeyStyle(alignment: .trailing))
                 .disabled(recorder.tape.duration == 0 || recorder.isBusy)
         }
         .frame(height: metrics.header)
+        .animation(Motion.readout, value: recorder.canHearInput)
     }
 }
 

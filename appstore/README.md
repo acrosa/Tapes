@@ -7,7 +7,7 @@ Character counts were checked against Apple's limits.
 
 1. **Push the repo** so the privacy and support pages go live on the site (`web/privacy.html`, `web/support.html`). App Store Connect rejects a privacy URL that does not load.
 2. **Sign in to Xcode** with the Alfajor LLC Apple ID (Xcode → Settings → Accounts). This is the one thing blocking the upload.
-3. **Build**: version 1.2, build 2 was uploaded on 15 November 2026 (build 1, from the day before, lacks hearing a plugged-in instrument). Version 1.2 could not be created on App Store Connect that day, because 1.1 was still waiting for review ("You cannot create a new version of the App in the current state"). Once 1.1 is approved and released: create version 1.2, set the text below, add `05-cut.png` to each screenshot set, attach the build. Do not submit until asked.
+3. **Build**: version 1.2, build 3 was uploaded on 15 November 2026. Attach build 3: builds 1 and 2 predate the headphones key. Version 1.2 could not be created on App Store Connect that day, because 1.1 was still waiting for review ("You cannot create a new version of the App in the current state"). Once 1.1 is approved and released: create version 1.2, set the text below, add `05-cut.png` to each screenshot set, attach the build. Do not submit until asked.
 
 ## App information
 
@@ -40,7 +40,7 @@ The build carries a privacy manifest (`Tapes/PrivacyInfo.xcprivacy`) declaring n
 
 ## Version 1.2
 
-**What's New** (594 of 4000)
+**What's New** (596 of 4000)
 
 ```
 You can now cut your takes.
@@ -52,8 +52,8 @@ You can now cut your takes.
 • Pinch to see the whole tape or a single note.
 
 Also new:
-• Plug in a synth and hear it through your iPhone or iPad, in headphones or from the speaker. Press play and the tape takes over.
-• Sound settings are down to one switch. The rest is automatic.
+• Plug in a synth, put on your headphones, and hear it through your iPhone or iPad. Press play and the tape takes over.
+• Sound setup is automatic. The only setting left is which input to record.
 ```
 
 **Promotional text** (122/170)
@@ -62,13 +62,13 @@ Also new:
 Plug in a synth, press record, and layer four tracks on one tape. No menus, no accounts. Just a recorder you work by hand.
 ```
 
-**Description** (1937/4000)
+**Description** (1927/4000)
 
 ```
 Vibe Tapes is a four-track tape recorder for iPhone and iPad. It has no menus and is built like a piece of hardware: every control does one thing and shows its own state.
 
 USE IT TO
-• Jam with a synth or drum machine. Plug it into the USB-C port and you hear it through your iPhone or iPad, in headphones or from the speaker. Press record to keep it and play to hear the tape.
+• Jam with a synth or drum machine. Plug it into the USB-C port, put on your headphones, and you hear it through your iPhone or iPad. Press record to keep it and play to hear the tape.
 • Catch an idea before it goes. Open the app, press record, and sing or play into the microphone.
 • Build a song in layers. Record a part, pick the next track, and play over what you already have.
 • Practise a hard section. Mark it with cues, switch the loop on, and slow the tape down.

@@ -63,7 +63,6 @@ struct LibrarySheet: View {
                             ForEach(recorder.inputs) { Text($0.name).tag($0.id) }
                         }
                     }
-                    Toggle("Hear the input", isOn: Binding(get: { recorder.hearsInput }, set: { recorder.hearsInput = $0 }))
                 } header: {
                     header("Sound")
                 } footer: {
@@ -120,8 +119,8 @@ struct LibrarySheet: View {
             lines.append("Now: playing through \(output).")
         }
         lines.append("With nothing plugged in, Tapes records the built-in microphone and plays through the speaker.")
-        lines.append("Plug in an instrument and Tapes records that instead. You hear it live, through this device or your headphones. While the tape plays, you hear the tape.")
-        lines.append("Turn Hear the input off for a microphone that sits near the speaker.")
+        lines.append("Plug in an instrument and Tapes records that instead. You hear it live in your headphones. While the tape plays, you hear the tape.")
+        lines.append("With headphones on, a headphones key appears at the top of the recorder. It switches the live sound off and on.")
         return lines.joined(separator: "\n")
     }
 

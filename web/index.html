@@ -401,13 +401,13 @@
   <section class="listen row">
     <div class="intro">
       <h2>Hear it as you play</h2>
-      <p>Plug in a synth and it plays through your iPhone or iPad, in your headphones or from the speaker. Press play and the tape takes over.</p>
+      <p>Plug in a synth, put on your headphones, and you hear it through your iPhone or iPad. Press play and the tape takes over.</p>
     </div>
     <div class="setups sub">
       <figure class="wide" id="listen">
         <div class="switches">
           <button type="button" id="sw-plug" aria-pressed="true"><i aria-hidden="true"></i>Synth plugged in</button>
-          <button type="button" id="sw-cans" aria-pressed="false"><i aria-hidden="true"></i>Headphones</button>
+          <button type="button" id="sw-cans" aria-pressed="true"><i aria-hidden="true"></i>Headphones</button>
           <div class="modes" role="radiogroup" aria-label="Tape">
             <button type="button" role="radio" aria-checked="true" data-mode="stop"><i aria-hidden="true"></i>Stopped</button>
             <button type="button" role="radio" aria-checked="false" data-mode="rec"><i aria-hidden="true"></i>Recording</button>
@@ -441,7 +441,7 @@
             <rect class="part" x="575" y="122" width="12" height="24" rx="5"/><rect class="part" x="621" y="122" width="12" height="24" rx="5"/>
           </g>
         </svg></div>
-        <figcaption class="legend" id="listen-says" aria-live="polite">The synth plays from the speaker.</figcaption>
+        <figcaption class="legend" id="listen-says" aria-live="polite">The synth plays in your headphones.</figcaption>
       </figure>
     </div>
     <p class="legend">Wireless headphones play the synth a moment late. That suits a sequence. To play by hand, use wired ones.</p>
@@ -534,7 +534,7 @@
     }
     function set() {
       var plugged = plug.getAttribute("aria-pressed") === "true", worn = cans.getAttribute("aria-pressed") === "true";
-      var live = plugged && mode !== "play";             // the synth is passed through
+      var live = plugged && worn && mode !== "play";     // the synth is passed through, to headphones only
       var tape = mode === "play";
       var heard = live || tape, mic = !plugged && mode === "rec";
       var where = worn ? "in your headphones" : "from the speaker";
@@ -542,7 +542,7 @@
       synth.classList.toggle("away", !plugged);
       waveIn.style.display = plugged ? "" : "none";
       waveIn.classList.toggle("live", plugged);
-      inWant = plugged ? 9 : 0;
+      inWant = plugged ? 9 : 0;                           // the synth always sends; whether it is heard is the other side
       arcsIn.style.display = plugged ? "none" : "";
       arcsIn.classList.toggle("on", mic); arcsIn.classList.toggle("live", mic);
 
@@ -557,9 +557,9 @@
       rec.classList.toggle("on", mode === "rec");
 
       says.textContent =
-        plugged ? (mode === "stop" ? "The synth plays " + where + "."
-                 : mode === "rec" ? "Recording the synth. You still hear it " + where + "."
-                 : "The tape plays " + where + ". The synth steps aside until you stop.")
+        plugged ? (mode === "stop" ? (worn ? "The synth plays in your headphones." : "Put on headphones to hear the synth here.")
+                 : mode === "rec" ? (worn ? "Recording the synth. You still hear it in your headphones." : "Recording the synth.")
+                 : "The tape plays " + where + "." + (worn ? " The synth steps aside until you stop." : ""))
                 : (mode === "stop" ? "Nothing plugged in. Press record to use the microphone."
                  : mode === "rec" ? "Recording from the microphone."
                  : "The tape plays " + where + ".");

@@ -98,7 +98,7 @@ The first press of Record asks for the microphone. If it is refused, an alert of
 There is nothing to set up. The rule:
 
 - Nothing plugged in: record from the built-in microphone, play through the speaker (or headphones).
-- An instrument plugged in (a Roland T-8, an audio interface): record from it. Tape stopped, the instrument is heard live through this device, in headphones if there are any, otherwise the speaker. During a take it is still heard. While the tape plays back, the live sound steps aside and the tape is what is heard.
+- An instrument plugged in (a Roland T-8, an audio interface): record from it. With headphones on (AirPods or wired), the instrument is heard live in them while the tape is stopped and during a take; while the tape plays back, the live sound steps aside and the tape is what is heard. Without headphones the instrument is not heard through this device: iOS sends its sound back out through the instrument, and the app cannot choose the speaker for it (every routing option was tried on an iPad with a T-8, 15 November 2026).
 - The built-in microphone is never passed through: it would feed back into the speaker and echo in headphones.
 
 Where iOS sends an instrument's sound back out through the instrument itself (it has offered some
@@ -116,9 +116,8 @@ If the input is not there when record is pressed, the tape does not roll: the di
 | Setting | What it does |
 | --- | --- |
 | Input | Automatic (iOS chooses, preferring what was plugged in last), or any input on offer. A chosen input that is no longer plugged in counts as Automatic. So the microphone can be recorded while an instrument stays connected. |
-| Hear the input | On by default. Off stops a plugged-in input being passed through; for a USB microphone that sits near the speaker. |
 
-The sheet names the input and output in use.
+Hearing the input is switched with the headphones in the header, not here; it is on by default. Off is for a USB microphone that sits near the speaker. The sheet names the input and output in use.
 Tracks are mono: a stereo input is summed. There is no MIDI.
 
 ### When the microphone is on
@@ -138,6 +137,7 @@ when the tape runs out. The first time, iOS asks whether to allow Live Activitie
 ### Header
 - **The gear** at the top left opens the shelf: open, create, rename (swipe), delete (swipe). Also holds the finish (Light, Dark or Green, each shown as a small preview tile), Haptics, and Show layout grid.
 - **The scissors** beside the gear open the cutting controls (below). Dimmed on an empty tape and while recording.
+- **The headphones** beside the scissors switch hearing a plugged-in instrument on and off, with a lamp that is lit when on. They are only there when it can happen: an instrument plugged in and the sound going to headphones (or, where iOS allows it, the speaker). The display reads "INPUT HEARD" or "INPUT SILENT".
 - **export** mixes the tape to a stereo WAV with the current mix and speed and opens the share sheet.
 
 Tape folders are also visible in the Files app (`Tapes/Tapes/<id>/track1.wav` …).

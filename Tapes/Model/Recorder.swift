@@ -64,6 +64,8 @@ final class Recorder {
     private(set) var positionHundredths = 0
     /// Bumped when routing changes, so views reading the stored choices redraw.
     private(set) var routeRevision = 0
+    /// A plugged-in instrument can be heard through this device right now (see `AudioIO`).
+    private(set) var canHearInput = false
     /// Set while the tape is being cut. The faceplate shows the edit controls instead.
     private(set) var edit: EditSession?
     var micDenied = false
@@ -218,6 +220,13 @@ final class Recorder {
         }
     }
 
+    /// The headphones in the header.
+    func toggleHearsInput() {
+        hearsInput.toggle()
+        Haptics.touch()
+        flash(hearsInput ? "Input heard" : "Input silent")
+    }
+
     private func applyRouting() {
         let choice = inputChoice
         io.setRouting(AudioRouting(inputID: choice.isEmpty ? nil : choice, monitor: hearsInput))
@@ -234,6 +243,7 @@ final class Recorder {
 
     private func refreshRoute() {
         inputs = io.inputs
+        canHearInput = io.canHearInput
         let names = io.routeNames
         inputName = names.input
         outputName = names.output

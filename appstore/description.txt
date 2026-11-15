@@ -1,7 +1,7 @@
 Vibe Tapes is a four-track tape recorder for iPhone and iPad. It has no menus and is built like a piece of hardware: every control does one thing and shows its own state.
 
 USE IT TO
-• Jam with a synth or drum machine. Plug it into the USB-C port and you hear it through your iPhone or iPad, in headphones or from the speaker. Press record to keep it and play to hear the tape.
+• Jam with a synth or drum machine. Plug it into the USB-C port, put on your headphones, and you hear it through your iPhone or iPad. Press record to keep it and play to hear the tape.
 • Catch an idea before it goes. Open the app, press record, and sing or play into the microphone.
 • Build a song in layers. Record a part, pick the next track, and play over what you already have.
 • Practise a hard section. Mark it with cues, switch the loop on, and slow the tape down.

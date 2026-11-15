@@ -183,6 +183,16 @@ final class AudioIO: @unchecked Sendable {
         return route.outputs.contains { $0.portType == input.portType && $0.portName == input.portName }
     }
 
+    /// A plugged-in instrument can be heard through this device as things stand: it is the input,
+    /// and the sound is going somewhere other than back into it. In practice that means
+    /// headphones; iOS only pairs an instrument with the speaker of its own accord.
+    var canHearInput: Bool {
+        #if DEBUG
+        if ProcessInfo.processInfo.arguments.contains("-instrument") { return true }
+        #endif
+        return inputReady && onExternalInput && !pairedWithInput
+    }
+
     /// Sets the route. There is nothing to choose but the input:
     /// - the sound goes where iOS sends it (speaker, or headphones if there are any);
     /// - if iOS pairs an instrument's input with the instrument's own output, the speaker is
@@ -224,7 +234,9 @@ final class AudioIO: @unchecked Sendable {
         let route = AVAudioSession.sharedInstance().currentRoute
         let ins = route.inputs.map(\.portType.rawValue).joined(separator: ",")
         let outs = route.outputs.map(\.portType.rawValue).joined(separator: ",")
-        print("ROUTE \(why): in=[\(ins)] out=[\(outs)] monitor=\(monitor.outputVolume)")
+        let session = AVAudioSession.sharedInstance()
+        let offered = (session.availableInputs ?? []).map(\.portType.rawValue).joined(separator: ",")
+        print("ROUTE \(why): in=[\(ins)] out=[\(outs)] monitor=\(monitor.outputVolume) offered=[\(offered)] preferred=\(session.preferredInput?.portType.rawValue ?? "none") forced=\(overriding) engaged=\(inputEngaged) recording=\(recording)")
         #endif
     }
 
@@ -263,6 +275,27 @@ final class AudioIO: @unchecked Sendable {
             try session.setCategory(.multiRoute, mode: .default, options: [])
         }
         attempt("7 multiRoute + prefer external") { try session.setPreferredInput(external()) }
+        let plain = { try session.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker, .allowBluetoothA2DP]) }
+        attempt("8 back to the app's category, nothing preferred") {
+            try plain(); try session.setPreferredInput(nil); try session.overrideOutputAudioPort(.none)
+        }
+        attempt("12 mode videoRecording") {
+            try session.setCategory(.playAndRecord, mode: .videoRecording, options: [.defaultToSpeaker, .allowBluetoothA2DP])
+        }
+        attempt("13 videoRecording + prefer external") { try session.setPreferredInput(external()) }
+        attempt("14 playback category, then back") {
+            try session.setCategory(.playback, mode: .default)
+            Thread.sleep(forTimeInterval: 0.6)
+            let outs = session.currentRoute.outputs.map(\.portType.rawValue).joined(separator: ",")
+            print("PROBE 14 (while playback): out=[\(outs)]")
+            try plain()
+        }
+        attempt("15 override speaker, then none") {
+            try session.overrideOutputAudioPort(.speaker)
+            Thread.sleep(forTimeInterval: 0.6)
+            try session.overrideOutputAudioPort(.none)
+        }
+        attempt("16 then prefer external") { try session.setPreferredInput(external()) }
         print("PROBE done. Relaunch the app to restore its normal audio setup.")
     }
     #endif

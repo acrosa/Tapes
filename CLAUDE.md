@@ -32,6 +32,7 @@ Debug launch arguments: `-seedDemoTape` fills an empty tape with synthetic notes
 `-routeProbe` (device only) prints how iOS routes sound under each strategy with whatever is plugged in;
 `-autorecord` (simulator only) starts a take after loading, for store screenshots;
 `-edit` opens the cutting controls with the demo tape cut in two places;
+`-instrument` shows the headphones key as if an instrument and headphones were connected;
 `-landscape` turns the window on its side (the way to check landscape in a simulator); `-portrait` turns it upright;
 `-fold 0.55` stands in for iPhone Duo's fold at that fraction of the two-pane layout's longer side.
 

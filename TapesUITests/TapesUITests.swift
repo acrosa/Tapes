@@ -15,6 +15,22 @@ final class TapesUITests: XCTestCase {
 
     // MARK: Helpers
 
+    /// The headphones key is only there when an instrument can be heard; `-instrument` stands in for one.
+    func testTheHeadphonesKeySwitchesHearingTheInput() {
+        XCTAssertFalse(app.buttons["hear"].exists, "No instrument, so no headphones key")
+        app.terminate()
+        app.launchArguments = ["-resetTapes", "-seedDemoTape", "-instrument"]
+        app.launch()
+        let key = app.buttons["hear"]
+        XCTAssertTrue(key.waitForExistence(timeout: 10))
+        let before = key.value as? String
+        key.tap()
+        wait("the key to switch") { (key.value as? String) != before }
+        key.tap()
+        wait("the key to switch back") { (key.value as? String) == before }
+    }
+
+
     private func launch(reset: Bool) {
         app.launchArguments = (reset ? ["-resetTapes"] : []) + ["-seedDemoTape"]
         app.launch()

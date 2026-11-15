@@ -7,5 +7,5 @@ You can now cut your takes.
 • Pinch to see the whole tape or a single note.
 
 Also new:
-• Plug in a synth and hear it through your iPhone or iPad, in headphones or from the speaker. Press play and the tape takes over.
-• Sound settings are down to one switch. The rest is automatic.
+• Plug in a synth, put on your headphones, and hear it through your iPhone or iPad. Press play and the tape takes over.
+• Sound setup is automatic. The only setting left is which input to record.

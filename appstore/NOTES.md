@@ -70,8 +70,8 @@ microphone granted, demo tape seeded.
 
 ## Pending
 
-- 15 November 2026: build 2 of 1.2 adds hearing a plugged-in instrument through the device; attach
-  build 2, not build 1.
+- 15 November 2026: build 3 of 1.2 adds hearing a plugged-in instrument in headphones and the
+  headphones key; attach build 3, not 1 or 2.
 - 14 November 2026: version 1.2 (cutting) is built and uploaded (1.2, build 1) but not yet a
   version on App Store Connect: a new version cannot be created while 1.1 is waiting for review.
   When 1.1 is out: create 1.2, set What's New (`appstore/whats-new-1.2.txt`) and the description
