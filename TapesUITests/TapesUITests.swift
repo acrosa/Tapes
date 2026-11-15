@@ -356,6 +356,97 @@ final class TapesUITests: XCTestCase {
         XCTAssertTrue(sheet.waitForExistence(timeout: 20), "The share sheet should appear with the mixdown")
     }
 
+    // MARK: Cutting
+
+    /// What the splicing window says it holds.
+    private var pieces: String {
+        (app.descendants(matching: .any).matching(identifier: "splice").firstMatch.value as? String) ?? ""
+    }
+
+    /// Where the tape is, as the counter over the timeline says it.
+    private var cuttingPosition: String {
+        (app.descendants(matching: .any).matching(identifier: "edit-counter").firstMatch.value as? String) ?? ""
+    }
+
+    /// Moves the tape to a cue with the tape scale, then lifts the faceplate to cut there.
+    /// The scale shows one minute; a touch near a cue lands on it.
+    private func openTheCut(at cue: String, scale dx: CGFloat) {
+        element("Tape scale").coordinate(withNormalizedOffset: CGVector(dx: dx, dy: 0.5)).tap()
+        wait("the tape at \(cue)") { self.value(of: "Tape dial") == cue }
+        button("Cut the tape").tap()
+        XCTAssertTrue(button("Cut").waitForExistence(timeout: 3))
+        XCTAssertEqual(cuttingPosition, cue)
+    }
+
+    private func openTheCutAtTwoSeconds() {
+        openTheCut(at: "0:02.00", scale: 0.075)
+        XCTAssertEqual(pieces, "1 piece")
+    }
+
+    func testAPieceCanBeCutOffAndRemovedAndCancelPutsItBack() {
+        openTheCutAtTwoSeconds()
+        button("Cut").tap()
+        XCTAssertEqual(pieces, "2 pieces, piece 2 picked up at 0:02.00")
+        button("Remove piece").tap()
+        XCTAssertEqual(pieces, "1 piece")
+        // With nothing under the playhead any more, there is nothing to cut.
+        button("Cut").tap()
+        XCTAssertEqual(pieces, "1 piece")
+
+        button("cancel").tap()
+        XCTAssertTrue(button("Play").waitForExistence(timeout: 3))
+        XCTAssertTrue(display.contains("STOP"))
+        // The six seconds that were removed are back: the tape can be cut at 0:02 again.
+        openTheCutAtTwoSeconds()
+        button("Cut").tap()
+        XCTAssertEqual(pieces, "2 pieces, piece 2 picked up at 0:02.00")
+        button("cancel").tap()
+    }
+
+    func testARemovedPieceStaysRemovedAfterDone() {
+        if value(of: "loop") == "on" { button("loop").tap() }
+        openTheCutAtTwoSeconds()
+        button("Cut").tap()
+        button("Remove piece").tap()
+        button("done").tap()
+        wait("EDITED in the display") { self.display.contains("EDITED") }
+        pause(0.8)      // the faceplate is still coming down
+
+        // Track 1 now ends at 0:02. The other track is untouched, so the tape is as long as before.
+        openTheCut(at: "0:06.00", scale: 0.14)
+        button("Cut").tap()
+        XCTAssertEqual(pieces, "1 piece", "Nothing of track 1 should be left at 0:06")
+        button("all").tap()
+        button("Cut").tap()
+        XCTAssertEqual(pieces, "2 pieces, piece 2 picked up at 0:06.00", "The other track still reaches 0:06")
+        button("cancel").tap()
+    }
+
+    func testAPickedUpPieceCanBeDraggedAlongTheTape() {
+        openTheCutAtTwoSeconds()
+        button("Cut").tap()
+        // The picked-up piece starts under the playhead, in the middle of the top lane, and runs
+        // to the right. One second of tape is 48 points.
+        let window = app.descendants(matching: .any).matching(identifier: "splice").firstMatch
+        let grip = window.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.12)).withOffset(CGVector(dx: 40, dy: 0))
+        grip.press(forDuration: 0.1, thenDragTo: grip.withOffset(CGVector(dx: 96, dy: 0)), withVelocity: .slow, thenHoldForDuration: 0.2)
+        let said = pieces
+        XCTAssertTrue(said.hasPrefix("2 pieces, piece 2 picked up at 0:0"), said)
+        let seconds = Double(said.suffix(4)) ?? -1
+        XCTAssertEqual(seconds, 4.0, accuracy: 0.4, "Two seconds to the right of where it was cut: \(said)")
+
+        // Dragging anywhere else moves the tape, not the piece.
+        let glass = window.coordinate(withNormalizedOffset: CGVector(dx: 0.2, dy: 0.6))
+        glass.press(forDuration: 0.1, thenDragTo: glass.withOffset(CGVector(dx: 48, dy: 0)), withVelocity: .slow, thenHoldForDuration: 0.2)
+        wait("the tape to move back about a second") { self.cuttingPosition < "0:01.60" }
+        XCTAssertEqual(pieces, said)
+
+        // Touching another track's lane cuts that track instead: one whole piece again.
+        window.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.36)).tap()
+        wait("track 2 to be the one being cut") { self.pieces == "1 piece" }
+        button("cancel").tap()
+    }
+
     // MARK: Grid
 
     /// With the layout grid shown, GridKit marks every checked part that is off a column edge
@@ -372,7 +463,14 @@ final class TapesUITests: XCTestCase {
         XCUIDevice.shared.orientation = .landscapeLeft
         pause(1.5)
         XCTAssertEqual(faults.count, 0, "Sideways: " + faults.allElementsBoundByIndex.map(\.label).joined(separator: "; "))
+
+        button("Cut the tape").tap()
+        XCTAssertTrue(button("Cut").waitForExistence(timeout: 3))
+        pause(1.0)
+        XCTAssertEqual(faults.count, 0, "Cutting, sideways: " + faults.allElementsBoundByIndex.map(\.label).joined(separator: "; "))
         XCUIDevice.shared.orientation = .portrait
+        pause(1.5)
+        XCTAssertEqual(faults.count, 0, "Cutting, upright: " + faults.allElementsBoundByIndex.map(\.label).joined(separator: "; "))
     }
 
     // MARK: Landscape

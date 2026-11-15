@@ -31,6 +31,7 @@ Debug launch arguments: `-seedDemoTape` fills an empty tape with synthetic notes
 `-tiltX` and `-tiltY` (0 to 1; a negative value is misread as a flag) fix the tilt that lights the glass;
 `-routeProbe` (device only) prints how iOS routes sound under each strategy with whatever is plugged in;
 `-autorecord` (simulator only) starts a take after loading, for store screenshots;
+`-edit` opens the cutting controls with the demo tape cut in two places;
 `-landscape` turns the window on its side (the way to check landscape in a simulator); `-portrait` turns it upright;
 `-fold 0.55` stands in for iPhone Duo's fold at that fraction of the two-pane layout's longer side.
 
@@ -39,16 +40,16 @@ Debug launch arguments: `-seedDemoTape` fills an empty tape with synthetic notes
 | Path | What lives there |
 | --- | --- |
 | `Packages/GridKit` | Local package. Baseline unit (`Rhythm`), column grid (`ColumnGrid`, `GridContainer`, `UnitRow`), row grid (`RowGrid`), rhythm-locked type (`TypeSpec`, `.rhythm()`), the on-grid check (`.gridChecked()`), debug `GridOverlay`. Its README is the layout contract. No third-party "GridKit" exists for this; this one is ours. |
-| `Packages/TapeEngine` | Local package, pure Swift. `TapeCore`: the tape in memory, the playhead, render, record, loop, click, bounce. |
+| `Packages/TapeEngine` | Local package, pure Swift. `TapeCore`: the tape in memory, the playhead, render, record, loop, click, bounce. `Splice`: an edit as a list of pieces, and the sound it renders. |
 | `Tapes/Audio/AudioIO.swift` | AVAudioEngine and AVAudioSession around `TapeCore`. |
 | `Tapes/Model/Recorder.swift` | The one `@Observable` model. Every control action is a method here. |
 | `Tapes/Model/Tape.swift` | `TapeMeta` and `TapeStore` (disk format). |
 | `Tapes/Design/Theme.swift` | All tokens: `Palette`, `Typo`, `Motion`, `Haptics`. |
 | `Tapes/Fonts` | Geist Mono (in use) and Geist, with the Open Font License. Registered at launch. |
-| `Tapes/Views` | The faceplate and its parts. |
+| `Tapes/Views` | The faceplate and its parts. `EditView.swift` is the dark bed under the faceplate, where the tape is cut. |
 | `web` | The landing page: one static `index.html` and its images. No build step. |
 | `appstore` | Store listing text (`README.md`), the framed screenshots for both required sizes, the product page header and search artwork, and the scripts that compose them. |
-| `.claude/skills/appstore-release` | A copy of the general `appstore-release` skill (also installed in `~/.claude/skills`): version, listing text, screenshots, artwork, archive, submission sheet. What is particular to this app is in `appstore/NOTES.md`. |
+| `.claude/skills/appstore-release` | A copy of the general `appstore-release` skill. Its source is `~/Desktop/projects/skills/appstore-release`; edit it there and run `sync.sh` beside it, which also updates `~/.claude/skills` and other projects: version, listing text, screenshots, artwork, archive, submission sheet. What is particular to this app is in `appstore/NOTES.md`. |
 | `Shared` | Code compiled into both the app and the Live Activity extension: `RecordingAttributes` and `LiveTheme`. |
 | `TapesLive` | The widget extension that draws the recording Live Activity (Lock Screen and Dynamic Island). |
 | `TapesUITests` | End-to-end tests that drive the app through its controls on the seeded demo tape. A change to a control's behaviour needs its test changed or added here. |
@@ -70,7 +71,7 @@ Debug launch arguments: `-seedDemoTape` fills an empty tape with synthetic notes
 - There are three finishes (Light, Dark, Green). Text on a key or in a well uses `Palette.ink`/`inkSecondary`; text on the faceplate itself uses `Palette.label`/`legend`. Check a visual change in all three.
 - Colours, type, springs and durations come from `Theme.swift`. No literals in views. A new value means a new token and a line in the docs.
 - `Palette.signal` (orange) means recording or the playhead. `Palette.lamp` (green) means something is switched on. Nothing else is coloured.
-- One control per function. Do not add modes that change what an existing control does.
+- One control per function. Do not add modes that change what an existing control does. Cutting (the scissors) is a second surface under the faceplate, dark in every finish so it cannot be mistaken for it; it is the only one.
 - State is shown on the control (lamp, position, fill) and confirmed in the display readout. No toasts or banners.
 
 **Motion and haptics**

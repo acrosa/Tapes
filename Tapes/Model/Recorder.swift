@@ -8,6 +8,29 @@ struct Levels: Equatable {
     var input: Float = 0
 }
 
+/// What an edit cuts: one track, or all four as one tape.
+enum EditScope: Hashable {
+    case track(Int)
+    case all
+
+    var tracks: [Int] {
+        switch self {
+        case .track(let t): [t]
+        case .all: Array(0..<TapeCore.trackCount)
+        }
+    }
+}
+
+/// An edit in progress: the pieces, which one is picked up, and the outline of each track (its
+/// loudest sample every hundredth of a second): for a track being cut, of the sound the pieces
+/// were cut from; for the others, of the track as it is.
+struct EditSession: Equatable {
+    var scope: EditScope
+    var splice: Splice
+    var selected: Int?
+    var peaks: [[Float]]
+}
+
 struct ExportItem: Identifiable {
     let id = UUID()
     let url: URL
@@ -38,6 +61,8 @@ final class Recorder {
     private(set) var positionHundredths = 0
     /// Bumped when routing changes, so views reading the stored choices redraw.
     private(set) var routeRevision = 0
+    /// Set while the tape is being cut. The faceplate shows the edit controls instead.
+    private(set) var edit: EditSession?
     var micDenied = false
     var exportItem: ExportItem?
 
@@ -46,6 +71,12 @@ final class Recorder {
     @ObservationIgnored private var metaSave: Task<Void, Never>?
     @ObservationIgnored private var audioSave: Task<Void, Never>?
     @ObservationIgnored private var wasScrubbing = false
+    /// Tracks as they were when editing began (those an edit has changed), for cancel.
+    @ObservationIgnored private var editOriginals: [Int: [Float]] = [:]
+    /// What the pieces of the current scope are cut from.
+    @ObservationIgnored private var editBase: [Int: [Float]] = [:]
+    /// The single track last cut, for coming back from `all`.
+    @ObservationIgnored private var editTrack = 0
     @ObservationIgnored private var liveActivityID: String?
     #if DEBUG
     @ObservationIgnored private var seeded = false
@@ -107,6 +138,7 @@ final class Recorder {
     }
 
     func toggleRecord() {
+        guard edit == nil else { return refuse() }
         if transport == .recording {
             finishRecording()
             return
@@ -517,6 +549,148 @@ final class Recorder {
         }
     }
 
+    // MARK: Cutting
+
+    var isEditing: Bool { edit != nil }
+
+    /// Frames of tape per entry of `EditSession.peaks`.
+    var editBin: Int { Int(core.sampleRate / 100) }
+
+    /// Opens the edit on the selected track, or on all four if it is empty.
+    func beginEdit() {
+        guard transport != .recording, !isBusy, core.contentEnd > 0 else { return refuse() }
+        editOriginals = [:]
+        editTrack = (0..<TapeCore.trackCount).first(where: hasAudio) ?? 0
+        openEdit(hasAudio(selectedTrack) ? .track(selectedTrack) : .all)
+    }
+
+    /// Changes what is being cut. What was done so far stays done, and the pieces start again
+    /// from the sound as it now is.
+    func setEditScope(_ scope: EditScope) {
+        guard let edit, edit.scope != scope else { return }
+        guard scope.tracks.contains(where: hasAudio) else { return refuse() }
+        openEdit(scope)
+        Haptics.tick()
+    }
+
+    /// Switches between cutting all four tracks together and the track that was being cut before.
+    func toggleEditAll() {
+        guard let edit else { return }
+        setEditScope(edit.scope == .all ? .track(editTrack) : .all)
+    }
+
+    private func openEdit(_ scope: EditScope) {
+        if case .track(let t) = scope { editTrack = t }
+        editBase = [:]
+        var length = 0
+        var peaks: [[Float]] = []
+        for t in 0..<TapeCore.trackCount {
+            let samples = core.withTrack(t) { Array($0) }
+            peaks.append(samples.withUnsafeBufferPointer { Waveform.peaks($0, bin: editBin) })
+            guard scope.tracks.contains(t), !samples.isEmpty else { continue }
+            editBase[t] = samples
+            length = max(length, samples.count)
+        }
+        edit = EditSession(scope: scope, splice: Splice(length: length, capacity: core.capacity), selected: nil, peaks: peaks)
+    }
+
+    /// Cuts the piece under the playhead in two and picks up the second half.
+    func editCut() {
+        let frame = Int(core.positionFrames)
+        guard var session = edit, session.splice.cut(at: frame) else { return refuse() }
+        session.selected = session.splice.pieces.last { $0.start == frame }?.id
+        edit = session
+        Haptics.snap()
+        flash("Cut")
+    }
+
+    func editSelect(_ id: Int?) {
+        guard edit != nil, edit?.selected != id else { return }
+        edit?.selected = id
+        if id != nil { Haptics.tick() }
+    }
+
+    /// Picks up the next or previous piece along the tape and moves the tape to its start.
+    func editStep(_ direction: Int) {
+        guard let session = edit else { return }
+        let ordered = session.splice.pieces.sorted { $0.start < $1.start }
+        guard !ordered.isEmpty else { return refuse() }
+        let current = ordered.firstIndex { $0.id == session.selected }
+        let next = current.map { min(max($0 + direction, 0), ordered.count - 1) } ?? (direction > 0 ? 0 : ordered.count - 1)
+        editSelect(ordered[next].id)
+        seek(to: Double(ordered[next].start) / core.sampleRate)
+    }
+
+    /// Takes the picked-up piece off the tape. The gap stays; nothing else moves.
+    func editRemove() {
+        guard var session = edit, let id = session.selected else { return refuse() }
+        session.splice.remove(id)
+        session.selected = nil
+        edit = session
+        applyEdit()
+        flash("Removed")
+    }
+
+    /// Moves a piece while it is being dragged. Only the picture changes; `editDrop` makes the sound.
+    /// Returns the frame it was put at, which may have snapped to a neighbour.
+    @discardableResult
+    func editMove(_ id: Int, to start: Int, reach: Int) -> Int {
+        guard var session = edit, let before = session.splice.piece(id)?.start else { return start }
+        let snapped = session.splice.snapped(id, start: start, reach: reach)
+        session.splice.move(id, to: snapped)
+        edit = session
+        let after = session.splice.piece(id)?.start ?? snapped
+        if after != before, after != start { Haptics.snap() }
+        return after
+    }
+
+    func editDrop() {
+        applyEdit()
+    }
+
+    /// Moves the picked-up piece by a fraction of a second, for VoiceOver and Switch Control.
+    func editNudge(_ seconds: Double) {
+        guard let session = edit, let piece = session.selected.flatMap({ session.splice.piece($0) }) else { return refuse() }
+        editMove(piece.id, to: piece.start + Int(seconds * core.sampleRate), reach: 0)
+        applyEdit()
+    }
+
+    /// Writes the pieces onto the tape, so what plays is what is drawn.
+    private func applyEdit() {
+        guard let session = edit else { return }
+        let fade = Int(core.sampleRate * Recorder.editFade)
+        for (t, base) in editBase {
+            if editOriginals[t] == nil { editOriginals[t] = base }
+            let out = base.withUnsafeBufferPointer { session.splice.render(from: $0, fade: fade) }
+            out.withUnsafeBufferPointer { core.replace(track: t, with: $0) }
+        }
+        tape.duration = core.contentSeconds
+    }
+
+    /// Seconds a loose piece takes to fade in and out, so a cut never clicks.
+    static let editFade = 0.005
+
+    /// Leaves the edit. `keeping` saves the tape as it now is; otherwise every track goes back
+    /// to how it was when the edit began.
+    func endEdit(keeping: Bool) {
+        guard edit != nil else { return }
+        let changed = editOriginals
+        edit = nil
+        editBase = [:]
+        editOriginals = [:]
+        if keeping {
+            for t in changed.keys.sorted() { saveAudio(track: t) }
+            if !changed.isEmpty { flash("Edited") }
+        } else {
+            for (t, samples) in changed {
+                samples.withUnsafeBufferPointer { core.replace(track: t, with: $0) }
+            }
+        }
+        tape.duration = core.contentSeconds
+        if core.positionSeconds > core.contentSeconds { core.seek(toSeconds: core.contentSeconds) }
+        if keeping, !changed.isEmpty { touch() }
+    }
+
     // MARK: Internals
 
     private func refuse() {
@@ -595,6 +769,15 @@ final class Recorder {
         isBusy = false
         #if DEBUG
         if ProcessInfo.processInfo.arguments.contains("-autoplay") { togglePlay() }
+        // `-edit`: open the cutting controls with the tape cut in two places and a piece picked up.
+        if ProcessInfo.processInfo.arguments.contains("-edit") {
+            beginEdit()
+            for seconds in [2.0, 4.5] {
+                core.seek(toSeconds: seconds)
+                editCut()
+            }
+            core.seek(toSeconds: 3.5)
+        }
         #if targetEnvironment(simulator)
         // For store screenshots. Simulator only: it writes onto the tape, so it must never
         // be possible on a device with real tapes on it.

@@ -51,7 +51,7 @@ hangs from the top, so every edge is on the baseline grid, the dial's included.
 
 | Section | Height | Columns |
 | --- | --- | --- |
-| Header | 32 | a gear flush left (tapes and settings), "export" flush right |
+| Header | 32 | a gear flush left (tapes and settings), scissors two columns along (they lift the faceplate for cutting), "export" flush right |
 | Display | 112 | 12 |
 | Tape scale | 56 | 12 |
 | Control row | 72 | speed 3, tempo 3, click 2, cue 2, loop 2 |
@@ -218,6 +218,9 @@ No gradients other than the key highlight and the reflection on the display glas
 - **Fader**: 12pt groove that doubles as the meter, 48×32 cap with a centre line, a line across the strip at 100 % that the cap's line meets.
 - **Display**: glass window. Words in uppercase `status`; one line of settings beneath.
 - **Tape scale**: sunken strip drawn in Canvas.
+- **Cutting bed** (`EditView`): `glass` from edge to edge in every finish, with the display's inks. One layout for every screen: a header (two words in `displayInk`, the counter in `status` between them), the timeline filling the height, and four keys of transport height in two pairs.
+- **Timeline** (`TimelineLanes`): four lanes 8pt apart, each a rounded bed of `displayInk` at 6 % (3 % when not being cut) with its number at the top left. A piece is a rounded block of `displayInk` at 12 %, its outline of sound at 75 %, a hair of glass between pieces that touch. The picked-up piece is at 26 % with a 1pt `displayInk` outline and full-strength sound. A track not being cut shows its sound at 30 %. Second ticks along the bottom in `displayDim`, longer every five. The playhead is a 1.5pt `signal` line. No new colours.
+- **Cutting and the fold** (iPhone Duo half open): with the fold down the screen, the keys part around it, a pair each side, and the playhead stands in the middle of the left side; the timeline runs across. With the fold across the screen, two lanes sit above it and two below.
 
 ## Accessibility
 

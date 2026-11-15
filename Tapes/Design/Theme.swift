@@ -225,6 +225,8 @@ enum Motion {
     static let settle = Animation.spring(response: 0.36, dampingFraction: 0.82)
     /// The two panes moving apart or together as iPhone Duo is folded or opened flat.
     static let fold = Animation.spring(response: 0.4, dampingFraction: 0.9)
+    /// The faceplate changing to its cutting controls and back.
+    static let mode = Animation.spring(response: 0.42, dampingFraction: 0.88)
     /// A lamp or state fill changing.
     static let lamp = Animation.easeOut(duration: 0.12)
     /// Words changing in the display.

@@ -17,6 +17,7 @@ Tokens: `Motion` and `Haptics` in `Tapes/Design/Theme.swift`. Tape physics: `Tap
 | `Motion.press` | spring, response 0.18, damping 0.62 | a key travelling down and back; wheels and fader caps being gripped; the dial being held |
 | `Motion.settle` | spring, response 0.36, damping 0.82 | a control returning to rest (wheel reset); the record dot changing size |
 | `Motion.fold` | spring, response 0.4, damping 0.9 | the two panes moving apart or together, or their rows opening around the fold, as iPhone Duo is folded or opened flat; off with Reduce Motion |
+| `Motion.mode` | spring, response 0.42, damping 0.88 | the faceplate lifting away to show the cutting bed, and coming back down; a cross-fade (`readout`) with Reduce Motion |
 | `Motion.lamp` | ease-out, 0.12 s | lamps, text-key dimming |
 | `Motion.readout` | ease-in-out, 0.16 s | words cross-fading in the display |
 | `Motion.readoutHold` | 1.4 s | how long a readout replaces the transport state |
@@ -39,6 +40,7 @@ sprung switch. `settle` does not overshoot visibly.
 | Play key | The glyph swaps with a symbol replace transition. |
 | Display state | Cross-fade (`readout`). The counter never animates. |
 | Tape scale | Redrawn each frame from the playhead. When the scale needs more minutes it changes at once. |
+| Cutting | The faceplate slides up off the screen as one piece, with a shadow under its edge, and the dark bed is already there beneath it; leaving, it slides back down over the bed (`mode`). Nothing on the bed animates in. A dragged piece follows the finger 1:1. A snap gives one `snap` tap; cut gives `snap`; picking up and changing track give `tick`. |
 | Sheets | System presentation. |
 
 ## Tape physics
@@ -98,7 +100,7 @@ haptic. Where the reason is not obvious the display says it for a moment ("NOTHI
 
 ## Reduce Motion
 
-The interface has no travel or zoom to remove: its motion is 1.5pt key travel, cross-fades
+The interface has one large movement, the faceplate lifting away for cutting, which becomes a cross-fade with Reduce Motion. The rest is 1.5pt key travel, cross-fades
 and the tape itself, which is the content. These stay on with Reduce Motion. The tilt effects
 (reflection and leaning shadows) are a kind of parallax and switch off. If larger transitions
 are added later, they need a cross-fade alternative.

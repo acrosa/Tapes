@@ -1,6 +1,6 @@
 ---
 name: appstore-release
-description: Prepare an App Store release of an iOS or iPadOS app - the first submission, a new version, or a refresh of the listing. Bumps the version, writes the listing text and What's New, takes and frames the screenshots, makes the product page header and search artwork (with Codex image generation), builds the archive, and leaves a checked submission sheet in appstore/README.md. Use when the user says "prepare the App Store submission", "new release", "new version", "bump the version", "update the screenshots", "App Store assets", "What's New", "TestFlight", or "ship it to the store".
+description: Prepare and ship an App Store release of an iOS or iPadOS app - the first submission, a new version, or a refresh of the listing. Bumps the version, writes the listing text and What's New, takes and frames the screenshots, makes the product page header and search artwork (with Codex image generation), builds the archive, and leaves a checked submission sheet in appstore/README.md. With an App Store Connect API key on the machine it also uploads the build, sets the listing and screenshots, and submits for review. Use when the user says "prepare the App Store submission", "new release", "new version", "bump the version", "update the screenshots", "App Store assets", "What's New", "TestFlight", or "ship it to the store".
 ---
 
 # App Store release
@@ -28,6 +28,7 @@ Scripts that come with this skill, in its `scripts` folder (compile with `swiftc
 | `frame-screenshot.swift` | Puts a capture (or three, fanned) under a two-line caption at an exact size. |
 | `contact-sheet.swift` | Numbered sheet of images for the user to choose from. |
 | `resize.swift` | Scales an image to an exact size as an opaque PNG. |
+| `asc.py` | App Store Connect API with a team key: any request, plus screenshot upload, attaching a build, and submitting for review. |
 
 ## The project's notes
 
@@ -115,9 +116,11 @@ Required sizes, as last read (re-check
 <https://developer.apple.com/help/app-store-connect/reference/app-information/screenshot-specifications>
 when a new device class ships): "iPhone with Dynamic Island (medium display)" at 1206 × 2622 or
 1179 × 2556, and iPad 13" at 2064 × 2752 if the app runs on iPad. Apple scales these for other
-devices. PNG or JPEG, no alpha, up to 10 per size. An iPhone Duo slot exists and becomes
+devices. PNG or JPEG, no alpha, up to 10 per size. An iPhone Duo slot (`APP_IPHONE_DUO`) exists and becomes
 required in April 2027 for apps built with the iOS 27.1 SDK or later: outer display 1398 × 2034,
-inner display 2007 × 2853 (or either on its side). A Duo simulator has two displays; a fresh boot
+inner display 2007 × 2853 (or either on its side; App Store Connect took 1398 × 2034 and
+2853 × 2007 in November 2026). Capture the inner display with the device opened flat: half open,
+an app that respects the fold lays itself out around it. A Duo simulator has two displays; a fresh boot
 leaves it closed, `simctl io <device> screenshot --display=LCD` captures the outer one and
 `--display=LCD-1` the inner one. Nothing on the command line opens it: that is done by hand in
 Device Hub (inside Xcode.app), so ask the user when the inner set is wanted.
@@ -199,14 +202,33 @@ xcodebuild -project <App>.xcodeproj -scheme <Scheme> -configuration Release \
 Check the archive's `Info.plist` shows the new version and build, and that the privacy manifest
 is inside the app.
 
-Uploading needs the team's Apple ID signed into Xcode (Settings → Accounts) or an App Store
-Connect API key. If neither is on the machine, `-exportArchive` fails with "No Accounts"; say so
-and give the user the Organizer steps (Window → Organizer → Distribute App → App Store Connect →
-Upload). Do not work around it.
+**Ask before uploading, submitting, pushing or tagging**, unless the user has already said to go
+ahead with that step for this release. Each is outward-facing, and approval for one is not
+approval for the next: "upload the build" does not mean "submit it for review". If the privacy
+and support pages live in the repository, they only load once it is pushed and the site has
+redeployed, so the push comes before the submission.
 
-With an API key (a `.p8` in `~/.appstoreconnect/private_keys`; the project's notes or your memory
-say which Key ID and Issuer ID), upload from the command line with an export options plist whose
-`method` is `app-store-connect` and `destination` is `upload`:
+### With an App Store Connect API key
+
+The notes (or your memory for the project) say whether there is a key, with its Key ID and
+Issuer ID; the `.p8` is in `~/.appstoreconnect/private_keys`. The key covers every app on the
+team: touch only the app being released. Never print the key or copy it into the project, and
+keep the Key ID and Issuer ID out of a public repository.
+
+- The key must have the **Admin** role to sign an upload. A lesser key edits the listing but
+  `-exportArchive` fails with "Cloud signing permission error" (no access to cloud-managed
+  distribution certificates). A key's role cannot be changed; the user makes a new one. Without
+  the key flags the export fails with "Failed to Use Accounts" even when Xcode is signed in.
+  Do not work around either; say what is needed.
+- **Read the state first** (`asc.py GET "/v1/apps/<app>/appStoreVersions?limit=5"`, the builds,
+  the version's localization and its screenshot sets). The user may already have created the
+  version, written What's New, or uploaded images; change only what this release changes.
+- A build can only be attached to a version with the **same marketing version**: a 1.0.1 build
+  cannot go on version 1.1. Match the project's version to the version on App Store Connect
+  before archiving, and use a build number that version has not seen.
+
+Upload, with an export options plist whose `method` is `app-store-connect`, `destination` is
+`upload`, `signingStyle` is `automatic` and `teamID` is the team:
 
 ```sh
 xcodebuild -exportArchive -archivePath build/<App>.xcarchive -exportOptionsPlist ExportOptions.plist \
@@ -215,17 +237,27 @@ xcodebuild -exportArchive -archivePath build/<App>.xcarchive -exportOptionsPlist
   -authenticationKeyID <KEYID> -authenticationKeyIssuerID <ISSUER>
 ```
 
-The same key signs requests to the App Store Connect API (`api.appstoreconnect.apple.com`, an
-ES256 token with `aud` `appstoreconnect-v1`, at most 20 minutes long) for the rest: creating the
-version, setting the listing text (`appStoreVersionLocalizations`), uploading screenshots
-(`appScreenshotSets`, `appScreenshots`: reserve, upload the parts, commit with the MD5), choosing
-the build and submitting (`reviewSubmissions`). Read the current state first and change only what
-the release changes. The key covers every app on the team: touch only the one being released, and
-never print the key or copy it into the project.
+Then, with `ASC_KEY_ID` and `ASC_ISSUER_ID` set, `scripts/asc.py` does the rest:
 
-**Ask before uploading, pushing or tagging.** Each is outward-facing. If the privacy and support
-pages live in the repository, they only load once it is pushed and the site has redeployed, so
-the push comes before the user submits; tell them that, and push only when they say to.
+1. Wait for the build: `GET "/v1/builds?filter[app]=<app>&filter[preReleaseVersion.version]=<version>&sort=-uploadedDate"`
+   until `processingState` is `VALID` (a few minutes). Then `asc.py attach <version id> <build id>`.
+2. Listing text: `PATCH /v1/appStoreVersionLocalizations/<id>` with `whatsNew`, `description`,
+   `promotionalText` or `keywords`. Count the characters before sending.
+3. Screenshots: `asc.py screenshots <set id> files…` adds them and waits until Apple accepts them
+   (wrong dimensions fail here). When replacing a set, upload the new ones first, then `DELETE`
+   the old `appScreenshots`, then set the order with
+   `PATCH /v1/appScreenshotSets/<id>/relationships/appScreenshots`. Create a missing set with
+   `POST /v1/appScreenshotSets` and its `screenshotDisplayType`.
+4. Submit, only when the user says so: `asc.py submit <app id> <version id>`. The version should
+   then read `WAITING_FOR_REVIEW`. Tell the user how it is set to release (`releaseType`).
+
+Not in the API, so still the user's: agreements, tax and banking, and the App Privacy answers.
+
+### Without a key
+
+Uploading needs the team's Apple ID signed into Xcode (Settings → Accounts). Give the user the
+Organizer steps (Window → Organizer → Distribute App → App Store Connect → Upload) and the
+sheet to paste from.
 
 ## 7. Finish the sheet and report
 
@@ -237,6 +269,7 @@ What's New directly under the version heading.
 Then tell the user, briefly:
 
 - what is ready and where it is;
+- what was done on App Store Connect, if anything (uploaded, attached, text, images, submitted);
 - what only they can do (sign in, upload, paste, contact details, price, pressing Submit);
 - what was not verified (tests not run, images not viewed at full size, specs not re-read);
 - that nothing was committed, pushed or uploaded, unless they asked for it.

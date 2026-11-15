@@ -30,24 +30,42 @@ struct FaceplateView: View {
         let metrics = Metrics(large: widthClass == .regular && heightClass == .regular && roomy)
         // The two panes of the regular layout draw their own grids.
         let paned = widthClass == .regular && heightClass != .compact
-        GridContainer(showsOverlay: showsGrid && !paned, compactHeight: heightClass == .compact) { grid in
-            Group {
-                if heightClass == .compact {
-                    landscape(grid)
-                } else if widthClass == .regular {
-                    regular(grid, metrics)
-                } else {
-                    compact
+        ZStack {
+            // Cutting happens on the dark bed under the faceplate: the faceplate lifts away
+            // upwards to show it, and comes back down over it.
+            if recorder.isEditing {
+                EditView()
+                    .transition(.scale(scale: 0.9999))      // nothing to see; it only has to outlast the faceplate's slide
+                    .zIndex(0)
+            } else {
+                GridContainer(showsOverlay: showsGrid && !paned, compactHeight: heightClass == .compact) { grid in
+                    Group {
+                        if heightClass == .compact {
+                            landscape(grid)
+                        } else if widthClass == .regular {
+                            regular(grid, metrics)
+                        } else {
+                            compact
+                        }
+                    }
                 }
+                .background {
+                    Palette.surface
+                        .shadow(color: Palette.shadow.opacity(0.35), radius: Rhythm.u(4), y: Rhythm.u(2))
+                        .ignoresSafeArea()
+                }
+                .transition(reduceMotion ? .opacity : .offset(y: -(max(screen.width, screen.height) + Rhythm.u(60))))
+                .zIndex(1)
             }
-            .id(theme)      // …and build them again when the finish changes.
-            .environment(\.metrics, metrics)
         }
-        .background(Palette.surface.ignoresSafeArea())
+        .id(theme)      // …and build them again when the finish changes.
+        .environment(\.metrics, metrics)
+        .animation(reduceMotion ? Motion.readout : Motion.mode, value: recorder.isEditing)
+        .background((recorder.isEditing ? Palette.glass : Palette.surface).ignoresSafeArea())
         .onGeometryChange(for: CGSize.self) { $0.size } action: { screen = $0 }
         .preferredColorScheme(storedTheme.isEmpty ? nil : theme.scheme)
         // On iPad the status bar prints the app's name at the top left. The faceplate carries no title.
-        .statusBarHidden(metrics.large)
+        .statusBarHidden(metrics.large || recorder.isEditing)
         .sheet(isPresented: $showsLibrary) { LibrarySheet() }
         .sheet(item: $recorder.exportItem) { item in
             ShareSheet(url: item.url)
@@ -250,6 +268,7 @@ enum Fold {
 struct HeaderBar: View {
     @Environment(Recorder.self) private var recorder
     @Environment(\.metrics) private var metrics
+    @Environment(\.columnGrid) private var grid
     @Binding var showsLibrary: Bool
 
     var body: some View {
@@ -262,6 +281,17 @@ struct HeaderBar: View {
             }
             .accessibilityLabel("Tapes and settings")
             .buttonStyle(TextKeyStyle(alignment: .leading))
+            // The gear takes two columns and their gutter, so the scissors start on a column.
+            .frame(width: grid.span(2) + grid.gutter, alignment: .leading)
+            Button { recorder.beginEdit() } label: {
+                Image(systemName: "scissors")
+                    .font(.system(size: metrics.glyph - 1, weight: .regular))
+                    .foregroundStyle(Palette.legend)
+            }
+            .accessibilityLabel("Cut the tape")
+            .accessibilityHint("Shows the tape as pieces you can cut, move and remove")
+            .buttonStyle(TextKeyStyle(alignment: .leading))
+            .disabled(recorder.tape.duration == 0 || recorder.isBusy || recorder.transport == .recording)
             Spacer(minLength: 0)
             Button("export") { recorder.export() }
                 .buttonStyle(TextKeyStyle(alignment: .trailing))
@@ -273,15 +303,17 @@ struct HeaderBar: View {
 
 /// A word printed on the faceplate that can be pressed. The word sits against a margin;
 /// the touch area extends inwards from it.
-private struct TextKeyStyle: ButtonStyle {
+struct TextKeyStyle: ButtonStyle {
     var alignment: Alignment
+    /// `Palette.label` on the faceplate; the display's ink on glass.
+    var color: Color = Palette.label
     @Environment(\.isEnabled) private var isEnabled
     @Environment(\.metrics) private var metrics
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .faceType(.caption)
-            .foregroundStyle(Palette.label)
+            .foregroundStyle(color)
             .opacity(!isEnabled ? 0.3 : configuration.isPressed ? 0.5 : 1)
             .frame(minWidth: Rhythm.u(16), minHeight: Rhythm.u(11), alignment: alignment)
             .frame(height: metrics.header)
@@ -639,3 +671,4 @@ struct TransportRow: View {
         .frame(height: height ?? metrics.transport)
     }
 }
+

@@ -11,6 +11,8 @@ buttons do, and many functions are chords (hold Stop + tap another button).
 Tapes keeps the instrument and removes the modes:
 
 1. **One control per function.** Speed is a wheel. Loop is a key. The dial always moves the tape.
+   Cutting the tape is the one exception: it is a second surface under the faceplate (see
+   Cutting), made to look nothing like it, so no control on the faceplate ever changes what it does.
 2. **State lives on the control.** A lamp, a pointer or a fill. The display confirms each change in words.
 3. **The tape is visible.** A scale shows what is recorded on each track, the cues, the loop and the playhead.
 4. **Nothing is hidden behind a chord.** Secondary actions sit in a touch-and-hold menu on the thing they act on.
@@ -132,9 +134,45 @@ when the tape runs out. The first time, iOS asks whether to allow Live Activitie
 
 ### Header
 - **The gear** at the top left opens the shelf: open, create, rename (swipe), delete (swipe). Also holds the finish (Light, Dark or Green, each shown as a small preview tile), Haptics, and Show layout grid.
+- **The scissors** beside the gear open the cutting controls (below). Dimmed on an empty tape and while recording.
 - **export** mixes the tape to a stereo WAV with the current mix and speed and opens the share sheet.
 
 Tape folders are also visible in the Files app (`Tapes/Tapes/<id>/track1.wav` …).
+
+### Cutting
+
+The scissors lift the faceplate away, upwards, and show the bed under it: dark glass from edge to
+edge, whatever the finish, so there is no mistaking it for the recorder. It has two words, a
+timeline and four keys. The status bar is hidden.
+
+- **cancel** and **done** at the top, with the counter between them. The counter gives way for a
+  moment to the word for what was just done ("CUT", "REMOVED").
+- **The timeline**: the four tracks as lanes, 48pt to the second (72 on iPad), passing under a
+  playhead that stands still. Drag anywhere to move the tape. The lane being cut shows its
+  pieces, each with the outline of its sound; the other lanes show their sound, dimmer, to place
+  a piece against. Seconds are ticked along the bottom.
+- **Cut, remove, all, play** at the bottom. There is no record key, no dial and no tape scale here.
+
+How it works:
+
+- It opens on the selected track (on all four if that track is empty). **Touch another lane** to
+  cut that track instead. **all** cuts the four as one tape, which keeps them in time with each
+  other; press it again to go back to one track. Changing what is cut keeps what was done so far.
+- **Cut** divides the piece under the playhead in two and picks up the second half. Nothing
+  changes in the sound until a piece is moved or removed. A cut needs a hundredth of a second of
+  piece on either side.
+- **Touch a piece** to pick it up (it is outlined); touch it again to put it down.
+- **Drag a picked-up piece** along the tape. It pulls to the start of the tape, to where it came
+  from, and to the edges of other pieces when within 8pt. It cannot leave the tape.
+- **Remove** takes the picked-up piece off the tape. The gap stays; nothing else moves.
+- **Lay a piece over the end of another** and the two fade across the whole overlap: the longer
+  the overlap, the longer the fade. Otherwise a loose end fades over 5 ms, so a cut never clicks.
+  Pieces that still join where they were cut play through unchanged.
+- What plays is always what is drawn. **done** keeps it and saves the tracks that changed;
+  **cancel** puts every track back as it was when the scissors were pressed. Either brings the
+  faceplate back down.
+
+Not here yet: undo of a single step, copying a piece, zooming the window, and cutting while recording.
 
 ## Compared with Reel
 
@@ -146,6 +184,7 @@ Tape folders are also visible in the Files app (`Tapes/Tapes/<id>/track1.wav` �
 | Hold Stop + … chords | Not used |
 | Mixer sheet | Track keys as faders (iPhone), strips always visible (iPad) |
 | Rewind / fast-forward keys | Flick the dial, or touch the scale |
+| (no editing) | Scissors: cut, move and remove pieces of a track or of the whole tape |
 | Stereo tracks, USB multitrack | Mono tracks, built-in or default input |
 
 ## Not in 0.1
@@ -154,7 +193,7 @@ Listed so nobody assumes they exist: stereo tracks, USB multichannel input and o
 input monitoring, count-in, wait-for-sound, record-length, recording into a running loop,
 reverse playback, scratch (DJ) mode, resample and master record, MIDI and Ableton Link,
 stem export and M4A/AIFF, audio import, iCloud, background recording, time signatures other than 4/4,
-loop-point editing by dragging, undo for a take.
+loop-point editing by dragging, undo for a take or for a single cut.
 
 ## Known limits
 

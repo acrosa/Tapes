@@ -245,6 +245,15 @@ public final class TapeCore: @unchecked Sendable {
         lengths[t] = max(lengths[t], offset + count)
     }
 
+    /// Replaces everything on `track` with `samples`. Not for the audio thread.
+    public func replace(track t: Int, with samples: UnsafeBufferPointer<Float>) {
+        let count = min(samples.count, capacity)
+        let old = lengths[t]
+        if let base = samples.baseAddress, count > 0 { tracks[t].update(from: base, count: count) }
+        if old > count { (tracks[t] + count).update(repeating: 0, count: old - count) }
+        lengths[t] = count
+    }
+
     /// The recorded samples of `track`.
     public func withTrack<T>(_ t: Int, _ body: (UnsafeBufferPointer<Float>) throws -> T) rethrows -> T {
         try body(UnsafeBufferPointer(start: tracks[t], count: lengths[t]))
