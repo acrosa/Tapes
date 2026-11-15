@@ -7,7 +7,7 @@ Character counts were checked against Apple's limits.
 
 1. **Push the repo** so the privacy and support pages go live on the site (`web/privacy.html`, `web/support.html`). App Store Connect rejects a privacy URL that does not load.
 2. **Sign in to Xcode** with the Alfajor LLC Apple ID (Xcode → Settings → Accounts). This is the one thing blocking the upload.
-3. **Build**: version 1.2, build 3 was uploaded on 15 November 2026. Attach build 3: builds 1 and 2 predate the headphones key. Version 1.2 could not be created on App Store Connect that day, because 1.1 was still waiting for review ("You cannot create a new version of the App in the current state"). Once 1.1 is approved and released: create version 1.2, set the text below, add `05-cut.png` to each screenshot set, attach the build. Do not submit until asked.
+3. **Build**: version 1.2, build 3 was uploaded and submitted for review on 15 November 2026. It took the place of 1.1, which was withdrawn from review the same day, so 1.2 also carries the iPhone Duo support.
 
 ## App information
 
