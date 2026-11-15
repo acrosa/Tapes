@@ -141,7 +141,7 @@ typewritten label. Figures never shift as they change. Light, Regular and Medium
 | `numeral` | Medium | 17 / 24 | 22 / 28 | track numbers |
 | `status` | Medium | 12 / 16 | 15 / 20 | display state, uppercase |
 | `caption` | Regular | 12 / 16 | 15 / 20 | display second line, "export" |
-| `legend` | Regular | 12 / 16 | 13 / 20 | faceplate legends, lowercase |
+| `legend` | Regular | 10 / 16, tracked +0.8 | 11 / 20, tracked +0.9 | legends under keys and on track keys, in capitals (written lowercase in code, which is also the spoken name) |
 | scale | Regular | 10 | 12 | scale numerals (Canvas) |
 
 The counter is never cut short. Where the display window is narrow, the level meter drops from 16
@@ -219,8 +219,8 @@ No gradients other than the key highlight and the reflection on the display glas
 - **Display**: glass window. Words in uppercase `status`; one line of settings beneath.
 - **Tape scale**: sunken strip drawn in Canvas.
 - **Cutting bed** (`EditView`): `glass` from edge to edge in every finish, with the display's inks. One layout for every screen: a header (two words in `displayInk`, the counter in `status` between them), the timeline filling the height, and four keys of transport height in two pairs.
-- **Timeline** (`TimelineLanes`): four lanes 8pt apart, each a rounded bed of `displayInk` at 6 % (3 % when not being cut) with its number at the top left. A piece is a rounded block of `displayInk` at 12 %, its outline of sound at 75 %, a hair of glass between pieces that touch. The picked-up piece is at 26 % with a 1pt `displayInk` outline and full-strength sound. A track not being cut shows its sound at 30 %. Second ticks along the bottom in `displayDim`, longer every five. The playhead is a 1.5pt `signal` line. No new colours.
-- **Cutting and the fold** (iPhone Duo half open): with the fold down the screen, the keys part around it, a pair each side, and the playhead stands in the middle of the left side; the timeline runs across. With the fold across the screen, two lanes sit above it and two below.
+- **Timeline** (`TimelineLanes`): four lanes 8pt apart, each a rounded bed of `displayInk` at 6 % (3 % when not being cut) with its number at the top left. A piece is a rounded block of `displayInk` at 12 %, its outline of sound at 75 %, a hair of glass between pieces that touch. The picked-up piece is at 26 % with a 1pt `displayInk` outline and full-strength sound. A track not being cut shows its sound at 30 %. A ruler along the bottom in `displayDim`: marks at 0.1, 0.5, 1, 5, 10, 30 or 60 seconds, whichever keeps them 8pt apart, with a longer mark and the time (scale numerals) at the next division that keeps those 64pt apart. The playhead is a 1.5pt `signal` line. No new colours.
+- **Cutting and the fold** (iPhone Duo half open): with the fold down the screen, the keys part around it, a pair each side; the timeline runs across. With the fold across the screen, two lanes sit above it and two below.
 
 ## Accessibility
 

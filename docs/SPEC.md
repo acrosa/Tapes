@@ -147,10 +147,15 @@ timeline and four keys. The status bar is hidden.
 
 - **cancel** and **done** at the top, with the counter between them. The counter gives way for a
   moment to the word for what was just done ("CUT", "REMOVED").
-- **The timeline**: the four tracks as lanes, 48pt to the second (72 on iPad), passing under a
-  playhead that stands still. Drag anywhere to move the tape. The lane being cut shows its
-  pieces, each with the outline of its sound; the other lanes show their sound, dimmer, to place
-  a piece against. Seconds are ticked along the bottom.
+- **The timeline**: the four tracks as lanes, 48pt to the second (72 on iPad). The tape lies
+  still and the playhead travels along it, as on any timeline; when it nears the edge while
+  playing, or is moved out of sight, the view glides on to keep it a quarter of the way along.
+  **Touch** the tape to put the playhead there. **Drag** to look along the tape. **Pinch** to see
+  more of the tape or less: from a tenth of a second across 48pt down to the whole recording on
+  the screen, the second under the fingers staying under them. The scale is kept while the app runs. The lane being
+  cut shows its pieces, each with the outline of its sound; the other lanes show their sound,
+  dimmer, to place a piece against. A ruler runs along the bottom; its marks follow the scale
+  (never closer than 8pt) and the longer ones carry the time.
 - **Cut, remove, all, play** at the bottom. There is no record key, no dial and no tape scale here.
 
 How it works:
@@ -161,7 +166,7 @@ How it works:
 - **Cut** divides the piece under the playhead in two and picks up the second half. Nothing
   changes in the sound until a piece is moved or removed. A cut needs a hundredth of a second of
   piece on either side.
-- **Touch a piece** to pick it up (it is outlined); touch it again to put it down.
+- **Touch a piece** to pick it up (it is outlined; the playhead goes to the touch as well). Touch an empty stretch of the lane to put it down.
 - **Drag a picked-up piece** along the tape. It pulls to the start of the tape, to where it came
   from, and to the edges of other pieces when within 8pt. It cannot leave the tape.
 - **Remove** takes the picked-up piece off the tape. The gap stays; nothing else moves.
@@ -172,7 +177,7 @@ How it works:
   **cancel** puts every track back as it was when the scissors were pressed. Either brings the
   faceplate back down.
 
-Not here yet: undo of a single step, copying a piece, zooming the window, and cutting while recording.
+Not here yet: undo of a single step, copying a piece, and cutting while recording.
 
 ## Compared with Reel
 

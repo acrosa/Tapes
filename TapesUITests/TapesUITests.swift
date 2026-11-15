@@ -425,25 +425,52 @@ final class TapesUITests: XCTestCase {
     func testAPickedUpPieceCanBeDraggedAlongTheTape() {
         openTheCutAtTwoSeconds()
         button("Cut").tap()
-        // The picked-up piece starts under the playhead, in the middle of the top lane, and runs
-        // to the right. One second of tape is 48 points.
+        // The timeline opens with the playhead a quarter of the way along. The picked-up piece
+        // starts under it, in the top lane, and runs to the right. One second of tape is 48 points.
         let window = app.descendants(matching: .any).matching(identifier: "splice").firstMatch
-        let grip = window.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.12)).withOffset(CGVector(dx: 40, dy: 0))
+        let playhead = window.coordinate(withNormalizedOffset: CGVector(dx: 0.25, dy: 0.12))
+        let grip = playhead.withOffset(CGVector(dx: 40, dy: 0))
         grip.press(forDuration: 0.1, thenDragTo: grip.withOffset(CGVector(dx: 96, dy: 0)), withVelocity: .slow, thenHoldForDuration: 0.2)
         let said = pieces
         XCTAssertTrue(said.hasPrefix("2 pieces, piece 2 picked up at 0:0"), said)
         let seconds = Double(said.suffix(4)) ?? -1
         XCTAssertEqual(seconds, 4.0, accuracy: 0.4, "Two seconds to the right of where it was cut: \(said)")
+        XCTAssertEqual(cuttingPosition, "0:02.00", "Moving a piece leaves the playhead where it was")
 
-        // Dragging anywhere else moves the tape, not the piece.
-        let glass = window.coordinate(withNormalizedOffset: CGVector(dx: 0.2, dy: 0.6))
-        glass.press(forDuration: 0.1, thenDragTo: glass.withOffset(CGVector(dx: 48, dy: 0)), withVelocity: .slow, thenHoldForDuration: 0.2)
-        wait("the tape to move back about a second") { self.cuttingPosition < "0:01.60" }
+        // Dragging anywhere else looks along the tape; nothing on it moves.
+        let glass = window.coordinate(withNormalizedOffset: CGVector(dx: 0.6, dy: 0.6))
+        glass.press(forDuration: 0.1, thenDragTo: glass.withOffset(CGVector(dx: -48, dy: 0)), withVelocity: .slow, thenHoldForDuration: 0.2)
+        XCTAssertEqual(cuttingPosition, "0:02.00")
         XCTAssertEqual(pieces, said)
 
-        // Touching another track's lane cuts that track instead: one whole piece again.
-        window.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.36)).tap()
+        // A touch puts the playhead there. The view has moved on a second, so the same place on
+        // the glass, two seconds right of where the playhead was, is now 0:05. On another track's
+        // lane the touch also turns to that track: one whole piece again.
+        window.coordinate(withNormalizedOffset: CGVector(dx: 0.25, dy: 0.36)).withOffset(CGVector(dx: 96, dy: 0)).tap()
         wait("track 2 to be the one being cut") { self.pieces == "1 piece" }
+        let placed = Double(cuttingPosition.suffix(4)) ?? -1
+        XCTAssertEqual(placed, 5.0, accuracy: 0.4, cuttingPosition)
+        button("cancel").tap()
+    }
+
+    func testPinchingTheTimelineShowsMoreOfTheTape() {
+        openTheCutAtTwoSeconds()
+        let window = app.descendants(matching: .any).matching(identifier: "splice").firstMatch
+        // Touch the top lane near its right-hand end: the playhead goes to the time shown there.
+        let place = window.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.12))
+        place.tap()
+        let before = Double(cuttingPosition.suffix(4)) ?? -1
+        XCTAssertEqual(before, 6.8, accuracy: 0.5, cuttingPosition)
+
+        // Pinched to half the scale, twice the tape is on the glass: the same place is now
+        // past the end of the eight-second recording, and the playhead stops at the end.
+        window.pinch(withScale: 0.5, velocity: -1)
+        pause(0.6)
+        XCTAssertEqual(cuttingPosition, String(format: "0:%05.2f", before), "A pinch is not a touch: the playhead stays")
+        XCTAssertEqual(pieces, "1 piece, piece 1 picked up at 0:00.00")
+        place.tap()
+        let after = Double(cuttingPosition.suffix(4)) ?? -1
+        XCTAssertGreaterThan(after, before + 0.5, "More tape should fit after pinching in: \(cuttingPosition)")
         button("cancel").tap()
     }
 

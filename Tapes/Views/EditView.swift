@@ -26,15 +26,12 @@ struct EditView: View {
                 let down = band.flatMap { $0.height > $0.width ? $0 : nil }
                 // Where the lanes begin, so a fold across the screen can be found among them.
                 let lanesTop = pad + metrics.header + metrics.gap
-                // A fold down the screen parts the keys; the playhead stands in the middle of the left side.
+                // A fold down the screen parts the keys. The timeline runs across it.
                 let left = down?.minX ?? (geo.size.width - grid.gutter) / 2
                 let gap = down?.width ?? grid.gutter
                 VStack(spacing: metrics.gap) {
                     EditHeader().gridChecked()
-                    TimelineLanes(
-                        needle: down.map { $0.minX / 2 },
-                        fold: across.map { ($0.minY - lanesTop)...($0.maxY - lanesTop) }
-                    )
+                    TimelineLanes(fold: across.map { ($0.minY - lanesTop)...($0.maxY - lanesTop) })
                     .gridChecked()
                     HStack(spacing: gap) {
                         GridContainer(grid: Fold.grid(columns: grid.columns / 2, width: left)) { _ in
@@ -96,42 +93,84 @@ private struct EditHeader: View {
 
 // MARK: Timeline
 
-/// The four tracks as lanes, a fixed length of screen to the second, passing under the playhead.
+/// The four tracks as lanes, a fixed length of screen to the second. The tape lies still and the
+/// playhead travels along it; when it nears the edge the view moves on to keep it in sight.
 /// The lanes being cut show their pieces; the others show their sound, dimmer, to place a piece
 /// against.
 ///
-/// Drag anywhere to move the tape. Touch a piece to pick it up; drag a picked-up piece to move it.
-/// Where it is laid over the end of another, the two fade across. Touch a dim lane to cut that track.
+/// Touch the tape to put the playhead there (and pick up the piece under it). Drag to look along
+/// the tape. Drag a picked-up piece to move it; where it is laid over the end of another, the two
+/// fade across. Touch a dim lane to cut that track.
 struct TimelineLanes: View {
     @Environment(Recorder.self) private var recorder
     @Environment(\.metrics) private var metrics
-    /// Where the playhead stands, from the leading edge. Nil is the middle.
-    var needle: CGFloat?
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     /// A band across the lanes to keep clear (a fold): two lanes above it, two below.
     var fold: ClosedRange<CGFloat>?
 
-    /// Points of screen per second of tape: 48, or 72 where the faceplate is built larger.
-    private var pointsPerSecond: CGFloat { metrics.large ? Rhythm.u(18) : Rhythm.u(12) }
+    /// Points of screen per second of tape. It opens at 48 (72 where the faceplate is built
+    /// larger); a pinch changes it, and the choice is kept while the app runs.
+    private var pointsPerSecond: CGFloat { zoom ?? (metrics.large ? Rhythm.u(18) : Rhythm.u(12)) }
+    @State private var zoom = TimelineLanes.lastZoom
+    @MainActor private static var lastZoom: CGFloat?
+    /// The closest view: a tenth of a second is 48 points.
+    private let closest: CGFloat = 480
+    /// What a pinch began from: the scale, and the second of tape under the fingers.
+    @State private var pinch: (scale: CGFloat, second: Double)?
+    /// When a pinch last moved. For a moment after, fingers on the glass are still the pinch, not
+    /// a touch or a drag. (The pinch's own ending is not relied on: it does not always arrive.)
+    @State private var pinchMoved = Date.distantPast
+    private var pinching: Bool { Date().timeIntervalSince(pinchMoved) < 0.3 }
     private let ticks = Rhythm.u(4)
     private let between = Rhythm.u(2)
+    /// Clear lane before the start of the tape, so the first piece is not under the lane's number.
+    private let lead = Rhythm.u(8)
 
     private enum Hold {
-        case waiting                        // a finger is down and has not moved yet
-        case tape(last: CGFloat)            // dragging the tape
-        case piece(id: Int, origin: Int)    // dragging a piece that started at `origin`
+        case waiting                            // a finger is down and has not moved yet
+        case view(from: Double)                 // dragging the view, which began at this second
+        case piece(id: Int, origin: Int)        // dragging a piece that started at `origin`
     }
     @State private var hold: Hold?
+    /// The second of tape at the leading edge, and the glide between two such values.
+    @State private var glide = Glide(to: 0)
+
+    private struct Glide {
+        var from: Double
+        var to: Double
+        var began: Date
+
+        init(to: Double) {
+            from = to
+            self.to = to
+            began = .distantPast
+        }
+
+        func value(at date: Date) -> Double {
+            let t = min(max(date.timeIntervalSince(began) / Glide.time, 0), 1)
+            let eased = 1 - pow(1 - t, 3)
+            return from + (to - from) * eased
+        }
+
+        /// Seconds the view takes to move on.
+        static let time = 0.35
+    }
 
     var body: some View {
         let session = recorder.edit
         GeometryReader { geo in
-            TimelineView(.animation(minimumInterval: 1 / 60)) { _ in
+            TimelineView(.animation(minimumInterval: 1 / 60)) { timeline in
                 Canvas { context, size in
-                    if let session { draw(&context, size: size, session: session) }
+                    if let session { draw(&context, size: size, session: session, left: glide.value(at: timeline.date)) }
                 }
             }
             .contentShape(Rectangle())
             .gesture(touch(size: geo.size))
+            .simultaneousGesture(magnify(width: geo.size.width))
+            .onAppear { look(at: recorder.position, width: geo.size.width, glides: false) }
+            // The playhead is watched in tenths of a second: often enough to keep it in sight.
+            .onChange(of: recorder.positionTenths) { keepInSight(width: geo.size.width) }
+            .onChange(of: geo.size.width) { look(at: recorder.position, width: geo.size.width, glides: false) }
         }
         .accessibilityElement()
         .accessibilityIdentifier("splice")
@@ -140,8 +179,46 @@ struct TimelineLanes: View {
         .accessibilityAdjustableAction { recorder.editStep($0 == .increment ? 1 : -1) }
         .accessibilityAction(named: "Move piece earlier") { recorder.editNudge(-0.1) }
         .accessibilityAction(named: "Move piece later") { recorder.editNudge(0.1) }
-        .accessibilityAction(named: "Tape back one second") { recorder.seek(to: recorder.position - 1) }
-        .accessibilityAction(named: "Tape forward one second") { recorder.seek(to: recorder.position + 1) }
+        .accessibilityAction(named: "Playhead back one second") { recorder.seek(to: recorder.position - 1) }
+        .accessibilityAction(named: "Playhead forward one second") { recorder.seek(to: recorder.position + 1) }
+    }
+
+    // MARK: The view along the tape
+
+    /// The earliest and latest second the leading edge may show.
+    private func limits(width: CGFloat) -> ClosedRange<Double> {
+        let first = -Double(lead / pointsPerSecond)
+        let shown = Double(width / pointsPerSecond)
+        let end = max(recorder.core.contentSeconds, Double(recorder.edit?.splice.end ?? 0) / recorder.core.sampleRate)
+        return first...max(first, end - shown / 2)
+    }
+
+    private func move(to second: Double, width: CGFloat, glides: Bool) {
+        let range = limits(width: width)
+        let target = min(max(second, range.lowerBound), range.upperBound)
+        let now = Date()
+        if glides, !reduceMotion {
+            glide = { var g = Glide(to: target); g.from = glide.value(at: now); g.began = now; return g }()
+        } else {
+            glide = Glide(to: target)
+        }
+    }
+
+    /// Shows `second` a quarter of the way along.
+    private func look(at second: Double, width: CGFloat, glides: Bool) {
+        let shown = Double(width / pointsPerSecond)
+        // A tape that fits is shown from its start.
+        let fits = recorder.core.contentSeconds + Double(lead / pointsPerSecond) <= shown
+        move(to: fits ? -.infinity : second - shown / 4, width: width, glides: glides)
+    }
+
+    /// Moves the view on when the playhead has left it or is about to. Not while a finger is on it.
+    private func keepInSight(width: CGFloat) {
+        guard hold == nil else { return }
+        let shown = Double(width / pointsPerSecond)
+        let along = (recorder.position - glide.to) / shown
+        let playing = recorder.transport == .playing
+        if along < 0 || along > 1 || (playing && along > 0.9) { look(at: recorder.position, width: width, glides: true) }
     }
 
     private func spoken(_ session: EditSession?) -> String {
@@ -173,9 +250,11 @@ struct TimelineLanes: View {
         return (0..<count).map { CGRect(x: 0, y: CGFloat($0) * (height + between), width: size.width, height: height) }
     }
 
-    private func frame(at x: CGFloat, width: CGFloat) -> Int {
-        Int(recorder.core.positionFrames + Double((x - (needle ?? width / 2)) / pointsPerSecond) * recorder.core.sampleRate)
+    private func seconds(at x: CGFloat) -> Double {
+        glide.value(at: Date()) + Double(x / pointsPerSecond)
     }
+
+    private func frame(at x: CGFloat) -> Int { Int(seconds(at: x) * recorder.core.sampleRate) }
 
     private func track(at y: CGFloat, size: CGSize) -> Int? {
         lanes(in: size).firstIndex { $0.minY - between / 2 <= y && y < $0.maxY + between / 2 }
@@ -184,16 +263,39 @@ struct TimelineLanes: View {
     /// The piece under a touch, if the touch is on a lane that is being cut.
     private func piece(at point: CGPoint, size: CGSize) -> Piece? {
         guard let session = recorder.edit, let t = track(at: point.y, size: size), session.scope.tracks.contains(t) else { return nil }
-        return session.splice.piece(at: frame(at: point.x, width: size.width))
+        return session.splice.piece(at: frame(at: point.x))
+    }
+
+    /// Pinch to see more of the tape or less. The second under the fingers stays under them.
+    /// The furthest view shows the whole recording with a little to spare.
+    private func magnify(width: CGFloat) -> some Gesture {
+        MagnifyGesture(minimumScaleDelta: 0.02)
+            .onChanged { value in
+                if pinch == nil || !pinching {
+                    pinch = (pointsPerSecond, seconds(at: value.startLocation.x))
+                    // Two fingers are not a touch or a drag: let go of whatever one finger began.
+                    if case .piece = hold { recorder.editDrop() }
+                    hold = nil
+                }
+                pinchMoved = Date()
+                guard let pinch else { return }
+                let furthest = max(1, (width - lead) / CGFloat(max(recorder.core.contentSeconds * 1.1, 4)))
+                let scale = min(max(pinch.scale * value.magnification, min(furthest, closest)), closest)
+                zoom = scale
+                TimelineLanes.lastZoom = scale
+                move(to: pinch.second - Double(value.startLocation.x / scale), width: width, glides: false)
+            }
+            .onEnded { _ in pinch = nil }
     }
 
     private func touch(size: CGSize) -> some Gesture {
         DragGesture(minimumDistance: 0)
             .onChanged { drag in
+                guard !pinching else { return }
                 let rate = recorder.core.sampleRate
                 switch hold {
                 case nil:
-                    // A finger landing on the picked-up piece takes hold of it; anywhere else, of the tape.
+                    // A finger landing on the picked-up piece takes hold of it; anywhere else, of the view.
                     if let under = piece(at: drag.startLocation, size: size), under.id == recorder.edit?.selected {
                         hold = .piece(id: under.id, origin: under.start)
                         Haptics.touch()
@@ -201,53 +303,68 @@ struct TimelineLanes: View {
                         hold = .waiting
                     }
                 case .waiting:
-                    guard abs(drag.translation.width) > 6, recorder.beginScrub() else { return }
-                    hold = .tape(last: drag.translation.width)
-                case .tape(let last):
-                    recorder.scrub(bySeconds: -Double((drag.translation.width - last) / pointsPerSecond))
-                    hold = .tape(last: drag.translation.width)
+                    guard abs(drag.translation.width) > 6 else { return }
+                    hold = .view(from: glide.value(at: Date()) + Double(drag.translation.width / pointsPerSecond))
+                case .view(let from):
+                    move(to: from - Double(drag.translation.width / pointsPerSecond), width: size.width, glides: false)
                 case .piece(let id, let origin):
                     let moved = Int(Double(drag.translation.width / pointsPerSecond) * rate)
                     recorder.editMove(id, to: origin + moved, reach: Int(Double(Rhythm.u(2) / pointsPerSecond) * rate))
                 }
             }
             .onEnded { drag in
+                defer { hold = nil }
+                guard !pinching else { return }
                 switch hold {
                 case .waiting:
-                    // A touch that did not move. On a lane that is not being cut: cut that track.
-                    // Otherwise pick up what is under it, or put down what was held.
+                    // A touch that did not move puts the playhead there. On a lane that is not being
+                    // cut it also turns to that track; otherwise it picks up the piece under it.
+                    recorder.seek(to: max(0, seconds(at: drag.location.x)))
                     if let t = track(at: drag.location.y, size: size), let session = recorder.edit, !session.scope.tracks.contains(t) {
                         recorder.setEditScope(.track(t))
                     } else {
-                        let under = piece(at: drag.location, size: size)
-                        recorder.editSelect(under?.id == recorder.edit?.selected ? nil : under?.id)
+                        recorder.editSelect(piece(at: drag.location, size: size)?.id)
                     }
-                case .tape: recorder.endScrub()
-                case .piece: recorder.editDrop()
-                case nil: break
+                case .piece:
+                    recorder.editDrop()
+                    // A touch on the picked-up piece that did not move it still places the playhead.
+                    if abs(drag.translation.width) < 6 { recorder.seek(to: max(0, seconds(at: drag.location.x))) }
+                case .view, nil: break
                 }
-                hold = nil
             }
     }
 
-    private func draw(_ context: inout GraphicsContext, size: CGSize, session: EditSession) {
+    private func draw(_ context: inout GraphicsContext, size: CGSize, session: EditSession, left: Double) {
         let rate = recorder.core.sampleRate
         let position = recorder.core.positionFrames
         let scale = Double(pointsPerSecond) / rate              // points per frame
-        let middle = needle ?? size.width / 2
         let bin = Double(recorder.editBin)
-        func x(_ frame: Double) -> CGFloat { middle + CGFloat((frame - position) * scale) }
+        func x(_ frame: Double) -> CGFloat { CGFloat((frame - left * rate) * scale) }
 
-        // Seconds along the bottom, a longer tick every five.
-        let first = max(0, Int(((position - Double(middle) / scale) / rate).rounded(.up)))
-        let last = Int((position + Double(size.width - middle) / scale) / rate)
-        if first <= last {
-            for second in first...last {
-                let long = second.isMultiple(of: 5)
+        // The ruler along the bottom. Its divisions follow the scale, so marks are never crowded:
+        // a mark at least every 8 points, a longer one with the time at least every 64.
+        let steps: [Double] = [0.1, 0.5, 1, 5, 10, 30, 60]
+        let minor = steps.first { CGFloat($0) * pointsPerSecond >= Rhythm.u(2) } ?? 60
+        let major = steps.first { $0 > minor && CGFloat($0) * pointsPerSecond >= Rhythm.u(16) } ?? 120
+        let shown = Double(size.width / pointsPerSecond)
+        let firstMark = max(0, Int((left / minor).rounded(.up)))
+        let lastMark = Int((left + shown) / minor)
+        if firstMark <= lastMark {
+            for mark in firstMark...lastMark {
+                let second = Double(mark) * minor
+                let long = (second / major).rounded() * major == (second * 10).rounded() / 10
+                let at = x(second * rate)
                 var tick = Path()
-                tick.move(to: CGPoint(x: x(Double(second) * rate), y: size.height - (long ? Rhythm.u(2) : Rhythm.u(1))))
-                tick.addLine(to: CGPoint(x: x(Double(second) * rate), y: size.height))
+                tick.move(to: CGPoint(x: at, y: size.height - (long ? Rhythm.u(2) : Rhythm.u(1))))
+                tick.addLine(to: CGPoint(x: at, y: size.height))
                 context.stroke(tick, with: .color(Palette.displayDim), lineWidth: 1)
+                if long {
+                    let whole = Int(second)
+                    let tenths = Int((second * 10).rounded()) % 10
+                    let text = major < 1 ? String(format: "%d:%02d.%d", whole / 60, whole % 60, tenths) : String(format: "%d:%02d", whole / 60, whole % 60)
+                    let label = context.resolve(Text(text).font(Typo.scale(large: metrics.large)).foregroundStyle(Palette.displayDim))
+                    context.draw(label, at: CGPoint(x: at + 3, y: size.height - 6), anchor: .bottomLeading)
+                }
             }
         }
 
@@ -257,8 +374,14 @@ struct TimelineLanes: View {
             var path = Path()
             var column = max(rect.minX, 0).rounded(.up)
             while column < min(rect.maxX, size.width) {
+                // The loudest of the bins this column covers, so a far view loses no peaks.
                 let index = Int((Double(source) + Double(column - rect.minX) / scale) / bin)
-                let peak = index >= 0 && index < peaks.count ? CGFloat(min(peaks[index], 1)) : 0
+                let next = Int((Double(source) + Double(column + 2 - rect.minX) / scale) / bin)
+                var loudest: Float = 0
+                if index >= 0, index < peaks.count {
+                    for i in index..<min(max(next, index + 1), peaks.count) { loudest = max(loudest, peaks[i]) }
+                }
+                let peak = CGFloat(min(loudest, 1))
                 let half = max(0.5, peak.squareRoot() * (rect.height / 2 - Rhythm.u(1)))
                 path.move(to: CGPoint(x: column, y: rect.midY - half))
                 path.addLine(to: CGPoint(x: column, y: rect.midY + half))
@@ -296,8 +419,8 @@ struct TimelineLanes: View {
         }
 
         var line = Path()
-        line.move(to: CGPoint(x: middle, y: 0))
-        line.addLine(to: CGPoint(x: middle, y: size.height))
+        line.move(to: CGPoint(x: x(position), y: 0))
+        line.addLine(to: CGPoint(x: x(position), y: size.height))
         context.stroke(line, with: .color(Palette.signal), lineWidth: 1.5)
     }
 }
@@ -342,7 +465,7 @@ private struct EditKeys: View {
                 .accessibilityHint("Takes the picked-up piece off the tape and leaves the gap")
             } else {
                 Button { recorder.toggleEditAll() } label: {
-                    Text("all").faceType(.numeral).foregroundStyle(Palette.ink)
+                    Text("ALL").faceType(.status).foregroundStyle(Palette.ink)
                 }
                 .buttonStyle(KeyStyle())
                 .overlay(alignment: .top) {

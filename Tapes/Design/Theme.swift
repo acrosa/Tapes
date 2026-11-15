@@ -155,8 +155,8 @@ enum Typo {
         case (.status, true): TypeSpec(font: mono("Medium", 15), lineHeight: 20, tracking: 0.3)
         case (.caption, false): TypeSpec(font: mono("Regular", 12), lineHeight: 16, tracking: -0.2)
         case (.caption, true): TypeSpec(font: mono("Regular", 15), lineHeight: 20, tracking: -0.3)
-        case (.legend, false): TypeSpec(font: mono("Regular", 12), lineHeight: 16, tracking: -0.2)
-        case (.legend, true): TypeSpec(font: mono("Regular", 13), lineHeight: 20, tracking: -0.2)
+        case (.legend, false): TypeSpec(font: mono("Regular", 10), lineHeight: 16, tracking: 0.8)
+        case (.legend, true): TypeSpec(font: mono("Regular", 11), lineHeight: 20, tracking: 0.9)
         }
     }
 

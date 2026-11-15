@@ -40,7 +40,7 @@ sprung switch. `settle` does not overshoot visibly.
 | Play key | The glyph swaps with a symbol replace transition. |
 | Display state | Cross-fade (`readout`). The counter never animates. |
 | Tape scale | Redrawn each frame from the playhead. When the scale needs more minutes it changes at once. |
-| Cutting | The faceplate slides up off the screen as one piece, with a shadow under its edge, and the dark bed is already there beneath it; leaving, it slides back down over the bed (`mode`). Nothing on the bed animates in. A dragged piece follows the finger 1:1. A snap gives one `snap` tap; cut gives `snap`; picking up and changing track give `tick`. |
+| Cutting | The faceplate slides up off the screen as one piece, with a shadow under its edge, and the dark bed is already there beneath it; leaving, it slides back down over the bed (`mode`). Nothing on the bed animates in. The view along the tape glides to its new place in 0.35 s (ease-out) when the playhead needs bringing into sight; under a finger it follows 1:1. A dragged piece follows the finger 1:1. A snap gives one `snap` tap; cut gives `snap`; picking up and changing track give `tick`. |
 | Sheets | System presentation. |
 
 ## Tape physics

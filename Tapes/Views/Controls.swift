@@ -67,7 +67,8 @@ struct Lamp: View {
     }
 }
 
-/// A printed faceplate legend.
+/// A printed faceplate legend: small capitals, as engraved under a key. The word is given in
+/// lowercase (it is also the control's spoken name) and set in uppercase here.
 struct Legend: View {
     let text: String
     /// Printed on a key rather than on the faceplate.
@@ -79,7 +80,7 @@ struct Legend: View {
     }
 
     var body: some View {
-        Text(text)
+        Text(text.uppercased())
             .faceType(.legend)
             .fixedSize()
             .foregroundStyle(onKey ? Palette.inkSecondary : Palette.legend)
