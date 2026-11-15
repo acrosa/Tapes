@@ -176,8 +176,8 @@
   .intro { grid-column: 1 / span 6; display: flex; flex-direction: column; gap: 8px; }
   .intro h2 { font-weight: 300; font-size: 32px; line-height: 40px; letter-spacing: -0.03em; }
   .intro p { color: var(--ink-2); }
-  .plug, .finishes { row-gap: 32px; }
-  .plug > .legend { grid-column: 1 / -1; }
+  .plug, .listen, .finishes { row-gap: 32px; }
+  .plug > .legend, .listen > .legend { grid-column: 1 / -1; }
 
   /* Setups */
   .setups figure { grid-column: span 6; background: var(--recess); border-radius: 12px; padding: 24px; display: flex; flex-direction: column; gap: 16px; }
@@ -193,6 +193,45 @@
   .setups .lit { fill: var(--lamp); stroke: none; }
   .setups text { font: 400 10px var(--mono); fill: var(--mark-2); stroke: none; }
   .setups figcaption { font-family: var(--mono); letter-spacing: 0; color: var(--mark-2); }
+
+  /* Listening: one wide figure you can switch. Arcs are the device's own microphone and
+     speaker, waves are sound on a cable or in headphones. Orange is live, ink is the tape. */
+  .setups figure.wide { grid-column: 1 / span 8; }
+  .setups .wide svg { height: round(down, calc(100cqw * 240 / 660), 8px); }
+  .setups .wide figcaption { min-height: 32px; }
+  .switches { display: flex; flex-wrap: wrap; column-gap: 24px; }
+  .switches .modes { display: flex; flex-wrap: wrap; column-gap: 24px; margin-left: auto; }
+  .switches button {
+    font: 400 12px/16px var(--font); letter-spacing: 0.01em; color: var(--mark-2); background: none;
+    border: 0; padding: 12px 0; height: 40px; display: flex; align-items: center; gap: 8px; cursor: pointer;
+  }
+  .switches button:hover, .switches button[aria-pressed="true"], .switches button[aria-checked="true"] { color: var(--mark); }
+  .switches button:focus-visible { outline: 2px solid var(--mark); outline-offset: 4px; border-radius: 4px; }
+  .switches i { width: 8px; height: 8px; border-radius: 50%; box-shadow: inset 0 0 0 1px var(--mark-2); flex: none; }
+  .switches button[aria-pressed="true"] i { background: var(--lamp); box-shadow: none; }
+  .switches button[aria-checked="true"] i { background: var(--mark); box-shadow: none; }
+  .switches button[data-mode="rec"][aria-checked="true"] i { background: var(--signal); }
+  .wide .wave { fill: none; stroke: var(--mark); stroke-width: 1.25; stroke-linecap: round; }
+  .wide .wave.live { stroke: var(--signal); stroke-width: 2; }
+  .wide .arcs path { fill: none; stroke: var(--mark); stroke-width: 1.25; stroke-linecap: round; opacity: 0.25; }
+  .wide .arcs.live path { stroke: var(--signal); stroke-width: 2; }
+  .wide .arcs.on path { animation: arc 1.2s ease-in-out infinite; }
+  .wide .arcs.on path:nth-child(2) { animation-delay: 0.2s; }
+  .wide .arcs.on path:nth-child(3) { animation-delay: 0.4s; }
+  .wide .arcs.in.on path:nth-child(1) { animation-delay: 0.4s; }
+  .wide .arcs.in.on path:nth-child(3) { animation-delay: 0s; }
+  @keyframes arc { 0%, 100% { opacity: 0.25; } 40% { opacity: 1; } }
+  .wide .away { opacity: 0.3; }
+  .wide .synth, .wide .cans { transition: opacity 0.25s ease; }
+  .wide .reel { transform-origin: 321px 128px; }
+  .wide .reel.turning { animation: turn 3s linear infinite; }
+  @keyframes turn { to { transform: rotate(360deg); } }
+  .wide .rec { fill: var(--signal); opacity: 0; transition: opacity 0.15s ease; }
+  .wide .rec.on { opacity: 1; }
+  @media (prefers-reduced-motion: reduce) {
+    .wide .arcs.on path { animation: none; opacity: 1; }
+    .wide .reel.turning { animation: none; }
+  }
 
   /* Finishes */
   .shots figure { grid-column: span 4; display: flex; flex-direction: column; gap: 16px; }
@@ -224,7 +263,8 @@
     .stage .pad { grid-column: 3 / span 8; }
     .features > div { grid-column: span 6; }
     .intro { grid-column: 1 / -1; }
-    .setups figure { grid-column: 1 / -1; }
+    .setups figure, .setups figure.wide { grid-column: 1 / -1; }
+    .switches .modes { margin-left: 0; }
   }
   @media (max-width: 599px) {
     .pitch h1 { font-size: 44px; line-height: 48px; }
@@ -330,7 +370,7 @@
           <path class="line" d="M342 180h70M342 196h70M342 212h70" opacity="0.5"/>
           <text x="118" y="196" text-anchor="middle">synth or drum machine</text>
         </svg></div>
-        <figcaption class="legend">Straight in. Gear with USB audio needs one cable, and you listen on its headphone jack.</figcaption>
+        <figcaption class="legend">Straight in. Gear with USB audio needs one cable.</figcaption>
       </figure>
       <figure>
         <div class="frame"><svg viewBox="0 0 440 240" role="img" aria-label="A microphone connected to a USB audio interface, the interface connected to an iPhone, and headphones plugged into the interface.">
@@ -356,6 +396,55 @@
       </figure>
     </div>
     <p class="legend">Tracks are mono, so a stereo source is mixed to one channel.</p>
+  </section>
+
+  <section class="listen row">
+    <div class="intro">
+      <h2>Hear it as you play</h2>
+      <p>Plug in a synth and it plays through your iPhone or iPad, in your headphones or from the speaker. Press play and the tape takes over.</p>
+    </div>
+    <div class="setups sub">
+      <figure class="wide" id="listen">
+        <div class="switches">
+          <button type="button" id="sw-plug" aria-pressed="true"><i aria-hidden="true"></i>Synth plugged in</button>
+          <button type="button" id="sw-cans" aria-pressed="false"><i aria-hidden="true"></i>Headphones</button>
+          <div class="modes" role="radiogroup" aria-label="Tape">
+            <button type="button" role="radio" aria-checked="true" data-mode="stop"><i aria-hidden="true"></i>Stopped</button>
+            <button type="button" role="radio" aria-checked="false" data-mode="rec"><i aria-hidden="true"></i>Recording</button>
+            <button type="button" role="radio" aria-checked="false" data-mode="play"><i aria-hidden="true"></i>Playing</button>
+          </div>
+        </div>
+        <div class="frame"><svg viewBox="0 0 660 240" role="img" aria-labelledby="listen-says">
+          <g class="synth">
+            <rect class="part" x="16" y="88" width="164" height="84" rx="8"/>
+            <rect class="sunk" x="28" y="100" width="40" height="20" rx="4"/>
+            <circle class="knob" cx="88" cy="110" r="7"/><circle class="knob" cx="112" cy="110" r="7"/><circle class="knob" cx="136" cy="110" r="7"/>
+            <circle class="lit" cx="162" cy="110" r="3"/>
+            <path class="line" d="M28 132h140v28H28zM48 132v28M68 132v28M88 132v28M108 132v28M128 132v28M148 132v28"/>
+          </g>
+          <path class="wave" id="wave-in" d="M180 130H274"/>
+          <g class="arcs in" id="arcs-in">
+            <path d="M260 122a11 11 0 0 0 0 16"/><path d="M250 114a22 22 0 0 0 0 32"/><path d="M240 106a33 33 0 0 0 0 48"/>
+          </g>
+          <rect class="part" x="274" y="32" width="94" height="196" rx="16"/>
+          <rect class="glass" x="286" y="48" width="70" height="26" rx="5"/>
+          <circle class="rec" id="rec-dot" cx="298" cy="61" r="3.5"/>
+          <circle class="sunk" cx="321" cy="128" r="34"/><circle class="knob" cx="321" cy="128" r="29"/>
+          <g class="reel" id="reel"><circle class="dot" cx="321" cy="107" r="2.5"/></g>
+          <path class="line" d="M286 180h70M286 196h70M286 212h70" opacity="0.5"/>
+          <g class="arcs" id="arcs-out">
+            <path d="M382 122a11 11 0 0 1 0 16"/><path d="M392 114a22 22 0 0 1 0 32"/><path d="M402 106a33 33 0 0 1 0 48"/>
+          </g>
+          <path class="wave" id="wave-out" d="M368 130H574"/>
+          <g class="cans" id="cans">
+            <path class="line" d="M582 126a22 22 0 0 1 44 0"/>
+            <rect class="part" x="575" y="122" width="12" height="24" rx="5"/><rect class="part" x="621" y="122" width="12" height="24" rx="5"/>
+          </g>
+        </svg></div>
+        <figcaption class="legend" id="listen-says" aria-live="polite">The synth plays from the speaker.</figcaption>
+      </figure>
+    </div>
+    <p class="legend">Wireless headphones play the synth a moment late. That suits a sequence. To play by hand, use wired ones.</p>
   </section>
 
   <section class="finishes row">
@@ -413,6 +502,91 @@
   } catch (e) {}
   if (dark && dark.addEventListener) dark.addEventListener("change", mark);
   mark();
+
+  // Listening: what is heard for each combination of the three switches.
+  (function () {
+    var plug = document.getElementById("sw-plug"), cans = document.getElementById("sw-cans");
+    var modes = Array.prototype.slice.call(document.querySelectorAll("#listen .modes button"));
+    var waveIn = document.getElementById("wave-in"), waveOut = document.getElementById("wave-out");
+    var arcsIn = document.getElementById("arcs-in"), arcsOut = document.getElementById("arcs-out");
+    var synth = document.querySelector("#listen .synth"), phones = document.getElementById("cans");
+    var reel = document.getElementById("reel"), rec = document.getElementById("rec-dot"), says = document.getElementById("listen-says");
+    var still = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    var mode = "stop", inAmp = 0, outAmp = 0, inWant = 0, outWant = 0, phase = 0, running = false;
+
+    function wave(x1, x2, amp) {
+      var d = "M" + x1 + " 130";
+      for (var x = x1 + 2; x <= x2; x += 2) {
+        var edge = Math.min(1, (x - x1) / 16, (x2 - x) / 16);
+        d += "L" + x + " " + (130 + amp * edge * Math.sin((x - x1) / 28 * 2 * Math.PI - phase)).toFixed(2);
+      }
+      return d;
+    }
+    function draw() {
+      waveIn.setAttribute("d", wave(180, 274, inAmp));
+      waveOut.setAttribute("d", wave(368, 574, outAmp));
+    }
+    function tick() {
+      inAmp += (inWant - inAmp) * 0.18; outAmp += (outWant - outAmp) * 0.18; phase += 0.16;
+      draw();
+      running = inWant > 0 || outWant > 0 || inAmp > 0.05 || outAmp > 0.05;
+      if (running) requestAnimationFrame(tick); else { inAmp = outAmp = 0; draw(); }
+    }
+    function set() {
+      var plugged = plug.getAttribute("aria-pressed") === "true", worn = cans.getAttribute("aria-pressed") === "true";
+      var live = plugged && mode !== "play";             // the synth is passed through
+      var tape = mode === "play";
+      var heard = live || tape, mic = !plugged && mode === "rec";
+      var where = worn ? "in your headphones" : "from the speaker";
+
+      synth.classList.toggle("away", !plugged);
+      waveIn.style.display = plugged ? "" : "none";
+      waveIn.classList.toggle("live", plugged);
+      inWant = plugged ? 9 : 0;
+      arcsIn.style.display = plugged ? "none" : "";
+      arcsIn.classList.toggle("on", mic); arcsIn.classList.toggle("live", mic);
+
+      phones.classList.toggle("away", !worn);
+      waveOut.style.display = worn ? "" : "none";
+      waveOut.classList.toggle("live", live);
+      outWant = worn && heard ? 9 : 0;
+      arcsOut.style.display = worn ? "none" : "";
+      arcsOut.classList.toggle("on", heard); arcsOut.classList.toggle("live", live);
+
+      reel.classList.toggle("turning", mode !== "stop");
+      rec.classList.toggle("on", mode === "rec");
+
+      says.textContent =
+        plugged ? (mode === "stop" ? "The synth plays " + where + "."
+                 : mode === "rec" ? "Recording the synth. You still hear it " + where + "."
+                 : "The tape plays " + where + ". The synth steps aside until you stop.")
+                : (mode === "stop" ? "Nothing plugged in. Press record to use the microphone."
+                 : mode === "rec" ? "Recording from the microphone."
+                 : "The tape plays " + where + ".");
+
+      if (still) { inAmp = inWant; outAmp = outWant; draw(); }
+      else if (!running) { running = true; requestAnimationFrame(tick); }
+    }
+    [plug, cans].forEach(function (b) {
+      b.addEventListener("click", function () {
+        b.setAttribute("aria-pressed", b.getAttribute("aria-pressed") === "true" ? "false" : "true"); set();
+      });
+    });
+    function choose(n) {
+      modes.forEach(function (b, i) { b.setAttribute("aria-checked", i === n ? "true" : "false"); b.tabIndex = i === n ? 0 : -1; });
+      mode = modes[n].getAttribute("data-mode"); set();
+    }
+    modes.forEach(function (b, i) {
+      b.addEventListener("click", function () { choose(i); });
+      b.addEventListener("keydown", function (e) {
+        var step = e.key === "ArrowRight" || e.key === "ArrowDown" ? 1 : e.key === "ArrowLeft" || e.key === "ArrowUp" ? -1 : 0;
+        if (!step) return;
+        var next = (i + step + modes.length) % modes.length;
+        choose(next); modes[next].focus(); e.preventDefault();
+      });
+    });
+    choose(0);
+  })();
 
   var lines = document.getElementById("gridlines"), rows = document.getElementById("rowlines");
   function sync() { lines.hidden = rows.hidden = location.hash !== "#grid"; }

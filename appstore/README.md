@@ -1,4 +1,4 @@
-# App Store submission: Vibe Tapes 1.1
+# App Store submission: Vibe Tapes 1.2
 
 Everything to paste into App Store Connect, in the order the site asks for it.
 Character counts were checked against Apple's limits.
@@ -7,7 +7,7 @@ Character counts were checked against Apple's limits.
 
 1. **Push the repo** so the privacy and support pages go live on the site (`web/privacy.html`, `web/support.html`). App Store Connect rejects a privacy URL that does not load.
 2. **Sign in to Xcode** with the Alfajor LLC Apple ID (Xcode → Settings → Accounts). This is the one thing blocking the upload.
-3. **Build**: version 1.1, build 1 was uploaded and attached to the 1.1 version on 14 November 2026, with the listing text and the iPhone Duo screenshots. What is left is pressing Submit for Review.
+3. **Build**: version 1.2, build 2 was uploaded on 15 November 2026 (build 1, from the day before, lacks hearing a plugged-in instrument). Version 1.2 could not be created on App Store Connect that day, because 1.1 was still waiting for review ("You cannot create a new version of the App in the current state"). Once 1.1 is approved and released: create version 1.2, set the text below, add `05-cut.png` to each screenshot set, attach the build. Do not submit until asked.
 
 ## App information
 
@@ -38,16 +38,22 @@ Your call. If unsure: Free, all countries and regions. The app has no in-app pur
 
 The build carries a privacy manifest (`Tapes/PrivacyInfo.xcprivacy`) declaring no tracking, no collected data, and UserDefaults for the app's own settings (reason CA92.1).
 
-## Version 1.1
+## Version 1.2
 
-**What's New** (221 of 4000)
+**What's New** (594 of 4000)
 
 ```
-Vibe Tapes now works on iPhone Duo.
+You can now cut your takes.
 
-• Closed, it is the same recorder, fitted to the smaller screen.
-• Open, the mixer sits beside the reel, with a fader for each track.
-• Half open, the controls move clear of the hinge.
+• Press the scissors and the recorder lifts away to show the four tracks on a timeline.
+• Cut at the playhead, pick up a piece, and drag it somewhere else or take it out.
+• Lay one piece over the end of another and they fade into each other.
+• Cut one track on its own, or all four together so they stay in time.
+• Pinch to see the whole tape or a single note.
+
+Also new:
+• Plug in a synth and hear it through your iPhone or iPad, in headphones or from the speaker. Press play and the tape takes over.
+• Sound settings are down to one switch. The rest is automatic.
 ```
 
 **Promotional text** (122/170)
@@ -56,16 +62,17 @@ Vibe Tapes now works on iPhone Duo.
 Plug in a synth, press record, and layer four tracks on one tape. No menus, no accounts. Just a recorder you work by hand.
 ```
 
-**Description** (1557/4000)
+**Description** (1937/4000)
 
 ```
-Vibe Tapes is a four-track tape recorder for iPhone and iPad. It is one screen with no menus, built like a piece of hardware: every control does one thing and shows its own state.
+Vibe Tapes is a four-track tape recorder for iPhone and iPad. It has no menus and is built like a piece of hardware: every control does one thing and shows its own state.
 
 USE IT TO
-• Jam with a synth or drum machine. Plug it into the USB-C port and record it directly. When you stop, the tape plays back through the speaker, so there is nothing to unplug.
+• Jam with a synth or drum machine. Plug it into the USB-C port and you hear it through your iPhone or iPad, in headphones or from the speaker. Press record to keep it and play to hear the tape.
 • Catch an idea before it goes. Open the app, press record, and sing or play into the microphone.
 • Build a song in layers. Record a part, pick the next track, and play over what you already have.
 • Practise a hard section. Mark it with cues, switch the loop on, and slow the tape down.
+• Tidy a take. Cut out the false start, or move the good chorus to where it belongs.
 
 HOW IT WORKS
 • Four tracks on a six-minute tape, each with level, pan, mute and solo.
@@ -74,6 +81,9 @@ HOW IT WORKS
 • A click with tempo from 40 to 240 bpm.
 • Cues and a loop that repeats the section you are in.
 • Export mixes the four tracks into one audio file you can share or save.
+
+CUT AND REARRANGE
+Press the scissors and the recorder lifts away to show the tracks on a timeline. Cut at the playhead, drag a piece along the tape or take it out, and lay one piece over another to fade between them. Work on one track or all four together.
 
 IN THE BACKGROUND
 Recording carries on when you leave the app or lock the screen. A Live Activity shows the take running on the Lock Screen and in the Dynamic Island.
@@ -97,12 +107,12 @@ Requires iOS 18 or later.
 | --- | --- |
 | Support URL | https://tapes-web.vercel.app/support.html |
 | Marketing URL | https://tapes-web.vercel.app |
-| Version | 1.1 |
+| Version | 1.2 |
 | What's New | above, under the version heading |
 
 ## Screenshots
 
-Only the first two sizes are required; Apple scales them for other devices. The iPhone Duo slot is optional until April 2027, and filling it puts an iPhone Duo badge on the product page. Upload in file-name order.
+Only the first two sizes are required; Apple scales them for other devices. The iPhone Duo slot is optional until April 2027, and filling it puts an iPhone Duo badge on the product page. Upload in file-name order. Each set has five images; `05-cut.png` (the cutting timeline) is new in 1.2.
 
 | Slot | Folder | Size |
 | --- | --- | --- |

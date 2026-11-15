@@ -95,31 +95,34 @@ On regular widths each track gets a full strip instead: select key, pan wheel, f
 The first press of Record asks for the microphone. If it is refused, an alert offers Settings.
 
 ### Sound in and out (in the sheet behind the gear)
-iOS offers a USB instrument that has both an input and an output (a Roland T-8, an audio interface)
-only as a pair: record from it and play through it, or use the built-in microphone and speaker.
-Measured on an iPad with a T-8 using `-routeProbe`: forcing the speaker switches the input to the
-microphone, and naming the USB input switches the output back to the instrument. No combination
-gives USB in and speaker out. The settings work within that.
+There is nothing to set up. The rule:
 
-The rule, with Input on Automatic:
+- Nothing plugged in: record from the built-in microphone, play through the speaker (or headphones).
+- An instrument plugged in (a Roland T-8, an audio interface): record from it. Tape stopped, the instrument is heard live through this device, in headphones if there are any, otherwise the speaker. During a take it is still heard. While the tape plays back, the live sound steps aside and the tape is what is heard.
+- The built-in microphone is never passed through: it would feed back into the speaker and echo in headphones.
 
-- Something plugged in that can be recorded from: record from it; between takes play back through the speaker (if that setting is on).
-- Nothing plugged in: the built-in microphone and the speaker, and the route is left alone.
+Where iOS sends an instrument's sound back out through the instrument itself (it has offered some
+devices only as such a pair), the speaker is forced between takes so the tape can be heard here,
+and released for the take, because forcing the speaker also forces the microphone. In that case
+the instrument is not passed through: it already plays itself. `-routeProbe` prints what iOS does
+with whatever is plugged in.
+
+Heard on an iPad with a T-8 and AirPods on 15 November 2026: T-8 in, AirPods out, live and on
+playback. Over Bluetooth the live sound arrives about a fifth of a second late: fine for a
+sequence, late for playing by hand.
 
 If the input is not there when record is pressed, the tape does not roll: the display reads "NO INPUT".
 
 | Setting | What it does |
 | --- | --- |
 | Input | Automatic (iOS chooses, preferring what was plugged in last), or any input on offer. A chosen input that is no longer plugged in counts as Automatic. So the microphone can be recorded while an instrument stays connected. |
-| Play back through the speaker | Between takes, sound comes from the device's own speaker, so a tape can be heard without unplugging. For the length of a take the sound moves to the instrument, because that is the only way to record from it. On by default. It only acts when an input is plugged in, so headphones on a USB adapter are left alone. |
-| Hear the input | Passes the input through to the output, live. Silent from the built-in microphone to the built-in speaker (feedback), and silent back into the instrument the input came from (it already plays itself; the copy would be late). Useful for an input with no output of its own, such as a USB microphone. |
+| Hear the input | On by default. Off stops a plugged-in input being passed through; for a USB microphone that sits near the speaker. |
 
-To hear the instrument and the tape while recording, and so to overdub, headphones or a speaker go
-on the instrument's own output. The sheet names the input and output in use.
+The sheet names the input and output in use.
 Tracks are mono: a stereo input is summed. There is no MIDI.
 
 ### When the microphone is on
-Only when it is needed: for the length of a take, and while "Hear the input" is switched on.
+Only when it is needed: for the length of a take, and while a plugged-in instrument is being passed through to be heard. The built-in microphone is only ever on for a take.
 The rest of the time the input is disconnected, so iOS shows no microphone indicator while the tape
 sits or plays. If the app leaves the foreground with the tape at rest, it stops all audio and
 releases the audio session until it returns.

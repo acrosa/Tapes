@@ -12,11 +12,8 @@ struct AudioPort: Identifiable, Hashable, Sendable {
 struct AudioRouting: Equatable, Sendable {
     /// The input to record from. Nil lets iOS choose (it prefers whatever was plugged in last).
     var inputID: String?
-    /// Play back through the device's own speaker when a USB device offers an output.
-    /// Applies only while the tape is not recording (see `AudioIO.setRecording`).
-    var speaker = false
-    /// Pass the input through to the output, so what is being recorded can be heard.
-    var monitor = false
+    /// Pass a plugged-in input through to the output, so the instrument is heard on this device.
+    var monitor = true
 }
 
 /// Connects a `TapeCore` to the device: one source node that pulls the tape's output,
@@ -34,6 +31,7 @@ final class AudioIO: @unchecked Sendable {
     private var observers: [NSObjectProtocol] = []
     private var routing = AudioRouting()
     private var recording = false
+    private var playing = false
     private var overriding = false
     private var inputEngaged = false
     private var suspended = false
@@ -69,11 +67,9 @@ final class AudioIO: @unchecked Sendable {
             let reason = AVAudioSession.RouteChangeReason(rawValue: raw)
             // A device arriving or leaving resets the speaker override, so set the routing again.
             // Our own changes also land here; those only need the monitor rechecked.
-            if reason == .newDeviceAvailable || reason == .oldDeviceUnavailable {
-                self?.applyRouting()
-            } else {
-                self?.updateMonitor()
-            }
+            // Our own changes also land here; `applyRouting` only acts when something is out of place.
+            self?.applyRouting(lookingAgain: reason == .newDeviceAvailable || reason == .oldDeviceUnavailable)
+            self?.logRoute("changed (reason \(raw))")
             self?.onRouteChange?()
         })
         observers.append(center.addObserver(forName: AVAudioSession.interruptionNotification, object: nil, queue: .main) { [weak self] note in
@@ -125,15 +121,17 @@ final class AudioIO: @unchecked Sendable {
         updateEngagement()
     }
 
+    /// While the tape plays back, the live input steps aside so the recording is what is heard.
+    func setPlaying(_ on: Bool) {
+        playing = on
+        updateMonitor()
+        logRoute(on ? "playing" : "not playing")
+    }
+
     /// Tells the routing whether the tape is recording, and waits for the input to be in place.
     /// Returns false if there is no working input to record from.
     ///
-    /// iOS offers a USB instrument only as a pair: record from it and play through it, or use
-    /// the built-in microphone and speaker. (Measured with `-routeProbe`; no combination of
-    /// overrides gives USB in and speaker out.) So the rule is:
-    /// - something plugged in that can be recorded from: record from it, and between takes play
-    ///   back through the speaker (if that setting is on);
-    /// - nothing plugged in: the built-in microphone and speaker, and the route is left alone.
+    /// See `applyRouting` for where the sound goes during a take and between takes.
     func setRecording(_ on: Bool) async -> Bool {
         recording = on
         applyRouting()
@@ -172,32 +170,51 @@ final class AudioIO: @unchecked Sendable {
         return !externalInputAvailable || current?.portType != .builtInMic
     }
 
-    private func applyRouting() {
+    /// The route's input is something plugged in, not the device's own microphone.
+    private var onExternalInput: Bool {
+        guard let input = AVAudioSession.sharedInstance().currentRoute.inputs.first else { return false }
+        return input.portType != .builtInMic
+    }
+
+    /// iOS has sent the sound back out through the device it is recording from.
+    private var pairedWithInput: Bool {
+        let route = AVAudioSession.sharedInstance().currentRoute
+        guard let input = route.inputs.first, input.portType != .builtInMic else { return false }
+        return route.outputs.contains { $0.portType == input.portType && $0.portName == input.portName }
+    }
+
+    /// Sets the route. There is nothing to choose but the input:
+    /// - the sound goes where iOS sends it (speaker, or headphones if there are any);
+    /// - if iOS pairs an instrument's input with the instrument's own output, the speaker is
+    ///   forced between takes so the tape can be heard here, and released for the take, because
+    ///   forcing the speaker also forces the microphone.
+    ///
+    /// `lookingAgain`: something was plugged in or taken away, so release the speaker first and
+    /// see where iOS sends the sound by itself. Headphones are hidden while the speaker is forced.
+    private func applyRouting(lookingAgain: Bool = false) {
         guard inputReady else { return }
         let session = AVAudioSession.sharedInstance()
-        // The speaker is only forced when there is an instrument to take the sound away from it.
-        let speaker = routing.speaker && !recording && externalInputAvailable
         do {
             // Only touch the override when it has to change: every change is a route change,
             // which comes back here.
-            let onSpeaker = session.currentRoute.outputs.contains { $0.portType == .builtInSpeaker }
-            if speaker, !onSpeaker {
-                try session.overrideOutputAudioPort(.speaker)
-                overriding = true
-            } else if !speaker, overriding {
+            if overriding, lookingAgain || recording {
                 try session.overrideOutputAudioPort(.none)
                 overriding = false
             }
-            if !speaker {
-                // Forcing the speaker also forces the microphone, so the input only matters here.
+            if !overriding {
                 let wanted = chosenInput
                 if session.preferredInput?.uid != wanted?.uid {
                     try session.setPreferredInput(wanted)
+                }
+                if !recording, pairedWithInput {
+                    try session.overrideOutputAudioPort(.speaker)
+                    overriding = true
                 }
             }
         } catch {
             print("Audio routing: \(error)")
         }
+        updateEngagement()
         updateMonitor()
         logRoute("applied")
     }
@@ -250,16 +267,12 @@ final class AudioIO: @unchecked Sendable {
     }
     #endif
 
-    /// The input is passed to the output only where that helps: never from the device's own
-    /// microphone to its own speaker (it would feed back), and never back into the instrument
-    /// it came from (the instrument already plays itself, and the copy would arrive late).
+    /// A plugged-in input is passed to the output so the instrument is heard here: while the
+    /// tape is stopped and during a take, not while it plays back (then the tape is what is
+    /// heard). Never the device's own microphone (it would feed back, or echo in headphones),
+    /// and never back into the instrument the input came from (it already plays itself).
     private func updateMonitor() {
-        let route = AVAudioSession.sharedInstance().currentRoute
-        let input = route.inputs.first
-        let ownMicrophone = input?.portType == .builtInMic
-        let ownSpeaker = route.outputs.contains { $0.portType == .builtInSpeaker }
-        let sameDevice = !ownMicrophone && route.outputs.contains { $0.portType == input?.portType && $0.portName == input?.portName }
-        monitor.outputVolume = routing.monitor && !(ownMicrophone && ownSpeaker) && !sameDevice ? 1 : 0
+        monitor.outputVolume = routing.monitor && !playing && onExternalInput && !pairedWithInput ? 1 : 0
     }
 
     /// Input + output latency in frames, used to place a take where it was heard.
@@ -308,8 +321,8 @@ final class AudioIO: @unchecked Sendable {
         inputReady = true
     }
 
-    /// The input is wanted for a take, and for as long as the user has asked to hear it.
-    private var inputWanted: Bool { recording || routing.monitor }
+    /// The input is wanted for a take, and for as long as a plugged-in instrument is being heard.
+    private var inputWanted: Bool { recording || (routing.monitor && onExternalInput) }
 
     /// Connects or disconnects the input node to match `inputWanted`.
     private func updateEngagement() {

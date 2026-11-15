@@ -63,9 +63,11 @@ shot $PHONE p-light-play -theme light -autoplay
 shot $PHONE p-dark-rec   -theme dark  -autorecord
 shot $PHONE p-green      -theme green -autoplay
 shot $PHONE p-land       -theme light -autoplay -landscape
+shot $PHONE p-edit       -theme light -edit
 shot $PAD   i-light-play -theme light -autoplay
 shot $PAD   i-dark-rec   -theme dark  -autorecord
 shot $PAD   i-green      -theme green -autoplay
+shot $PAD   i-edit       -theme light -edit
 if [[ -n "$DUO" ]]; then
   DISPLAY_ARG=(--display=LCD)      # the outer display; the inner one is LCD-1
   shot $DUO d-light-play -theme light -autoplay
@@ -84,6 +86,7 @@ if [[ -n "$DUO" ]]; then
     shot $DUO o-light-play -theme light -autoplay
     shot $DUO o-dark-rec   -theme dark  -autorecord
     shot $DUO o-green      -theme green -autoplay
+    shot $DUO o-edit       -theme light -edit
   else
     echo "The Duo was not opened; keeping the open captures already in $RAW, if any."
   fi
@@ -99,6 +102,7 @@ compose() {  # folder prefix width height
   $TMP/compose $OUT/$1/03-by-hand.png $3 $4 "Move the tape|by hand." dark $FONT $RAW/$2-green.png
   $TMP/compose $OUT/$1/04-finishes.png $3 $4 "Light, dark|or green." dark $FONT \
     $RAW/$2-light-play.png $RAW/$2-dark-rec.png $RAW/$2-green.png
+  $TMP/compose $OUT/$1/05-cut.png $3 $4 "Cut a take.|Move the pieces." light $FONT $RAW/$2-edit.png
 }
 compose iphone p 1206 2622
 compose ipad-13 i 2064 2752
@@ -113,6 +117,7 @@ if [[ -f $RAW/o-light-play.png && -f $RAW/d-light-play.png ]]; then
   $TMP/compose $OUT/iphone-duo/03-by-hand.png $DW $DH "Move the tape|by hand." dark $FONT $RAW/o-green.png
   $TMP/compose $OUT/iphone-duo/04-finishes.png $DW $DH "Light, dark|or green." dark $FONT \
     $RAW/d-light-play.png $RAW/d-dark-rec.png $RAW/d-green.png
+  $TMP/compose $OUT/iphone-duo/05-cut.png $DW $DH "Cut a take.|Move the pieces." light $FONT $RAW/o-edit.png
 elif [[ -f $RAW/d-light-play.png ]]; then
   compose iphone-duo d 1398 2034      # no open captures yet: the closed device throughout
 fi

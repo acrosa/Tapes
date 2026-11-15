@@ -42,7 +42,10 @@ struct ExportItem: Identifiable {
 final class Recorder {
     enum Transport { case stopped, playing, recording }
 
-    private(set) var transport = Transport.stopped
+    private(set) var transport = Transport.stopped {
+        // While the tape plays it is the tape that is heard, not the live input.
+        didSet { if transport != oldValue { io.setPlaying(transport == .playing) } }
+    }
     private(set) var tape: TapeMeta
     private(set) var tapes: [TapeMeta]
     private(set) var selectedTrack = 0
@@ -206,19 +209,9 @@ final class Recorder {
         }
     }
 
-    /// Play back through this device's speaker when a USB instrument is connected. While a take
-    /// is being recorded the sound has to go through the instrument, so it applies between takes.
-    var playsThroughSpeaker: Bool {
-        get { UserDefaults.standard.object(forKey: "speakerOutput") as? Bool ?? true }
-        set {
-            UserDefaults.standard.set(newValue, forKey: "speakerOutput")
-            applyRouting()
-        }
-    }
-
-    /// Pass the input through to the output so it can be heard.
+    /// Pass a plugged-in instrument through to the output so it can be heard. On unless switched off.
     var hearsInput: Bool {
-        get { UserDefaults.standard.bool(forKey: "hearInput") }
+        get { UserDefaults.standard.object(forKey: "hearInput") as? Bool ?? true }
         set {
             UserDefaults.standard.set(newValue, forKey: "hearInput")
             applyRouting()
@@ -227,7 +220,7 @@ final class Recorder {
 
     private func applyRouting() {
         let choice = inputChoice
-        io.setRouting(AudioRouting(inputID: choice.isEmpty ? nil : choice, speaker: playsThroughSpeaker, monitor: hearsInput))
+        io.setRouting(AudioRouting(inputID: choice.isEmpty ? nil : choice, monitor: hearsInput))
         refreshRoute()
     }
 

@@ -1,0 +1,30 @@
+Vibe Tapes is a four-track tape recorder for iPhone and iPad. It has no menus and is built like a piece of hardware: every control does one thing and shows its own state.
+
+USE IT TO
+• Jam with a synth or drum machine. Plug it into the USB-C port and you hear it through your iPhone or iPad, in headphones or from the speaker. Press record to keep it and play to hear the tape.
+• Catch an idea before it goes. Open the app, press record, and sing or play into the microphone.
+• Build a song in layers. Record a part, pick the next track, and play over what you already have.
+• Practise a hard section. Mark it with cues, switch the loop on, and slow the tape down.
+• Tidy a take. Cut out the false start, or move the good chorus to where it belongs.
+
+HOW IT WORKS
+• Four tracks on a six-minute tape, each with level, pan, mute and solo.
+• A reel you turn by hand to move through the tape, with a tick you can feel at every second.
+• Tape speed from quarter to four times. Pitch follows speed, as it does on real tape.
+• A click with tempo from 40 to 240 bpm.
+• Cues and a loop that repeats the section you are in.
+• Export mixes the four tracks into one audio file you can share or save.
+
+CUT AND REARRANGE
+Press the scissors and the recorder lifts away to show the tracks on a timeline. Cut at the playhead, drag a piece along the tape or take it out, and lay one piece over another to fade between them. Work on one track or all four together.
+
+IN THE BACKGROUND
+Recording carries on when you leave the app or lock the screen. A Live Activity shows the take running on the Lock Screen and in the Dynamic Island.
+
+THREE FINISHES
+Light, dark or green. On iPad, and on iPhone Duo when it is open, the mixer sits beside the reel, with a fader for each track.
+
+PRIVATE
+No account, no ads, no tracking. The app never connects to the internet. Your tapes stay on your device, and you can reach them in the Files app.
+
+Requires iOS 18 or later.

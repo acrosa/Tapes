@@ -29,7 +29,8 @@ microphone granted, demo tape seeded.
 - States: light finish playing, dark finish recording, green finish playing, and the three
   finishes together. `-theme light|dark|green` picks the finish; `-landscape` turns the window.
 - Captions: "Four tracks. / One tape.", "Plug in a synth. / Press record.",
-  "Move the tape / by hand.", "Light, dark / or green." Caption font: `Tapes/Fonts/Geist-Medium.otf`.
+  "Move the tape / by hand.", "Light, dark / or green., "Cut a take. / Move the pieces." (the cutting
+  timeline, launched with `-edit`). Caption font: `Tapes/Fonts/Geist-Medium.otf`.
 - iPhone Duo: the `iphone-duo` set is 2853 × 2007: the open device for the first three (inner
   display, `--display=LCD-1`) and the three closed devices for the fourth (outer display,
   `--display=LCD`). The script restarts the Duo simulator first, because a fresh boot is the only
@@ -66,3 +67,13 @@ microphone granted, demo tape seeded.
 - 13 November 2026: App Store Connect rejected 1320 × 2868 iPhone screenshots ("File dimensions
   are invalid"). The iPhone slot is now "iPhone with Dynamic Island (medium display)" and takes
   only 1206 × 2622 or 1179 × 2556 (and their landscape forms). The 6.9" size is no longer a slot.
+
+## Pending
+
+- 15 November 2026: build 2 of 1.2 adds hearing a plugged-in instrument through the device; attach
+  build 2, not build 1.
+- 14 November 2026: version 1.2 (cutting) is built and uploaded (1.2, build 1) but not yet a
+  version on App Store Connect: a new version cannot be created while 1.1 is waiting for review.
+  When 1.1 is out: create 1.2, set What's New (`appstore/whats-new-1.2.txt`) and the description
+  (`appstore/description.txt`), add `05-cut.png` to the three screenshot sets, attach the build.
+  The user said not to submit it for review yet. Remove this note when done.

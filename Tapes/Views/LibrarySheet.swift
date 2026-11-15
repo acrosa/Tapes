@@ -63,7 +63,6 @@ struct LibrarySheet: View {
                             ForEach(recorder.inputs) { Text($0.name).tag($0.id) }
                         }
                     }
-                    Toggle("Play back through the speaker", isOn: Binding(get: { recorder.playsThroughSpeaker }, set: { recorder.playsThroughSpeaker = $0 }))
                     Toggle("Hear the input", isOn: Binding(get: { recorder.hearsInput }, set: { recorder.hearsInput = $0 }))
                 } header: {
                     header("Sound")
@@ -112,7 +111,7 @@ struct LibrarySheet: View {
         .preferredColorScheme(storedTheme.isEmpty ? nil : theme.scheme)
     }
 
-    /// What is connected now, and what the two switches do.
+    /// What is connected now, and what happens when something is plugged in.
     private var soundNote: String {
         var lines: [String] = []
         if let input = recorder.inputName, let output = recorder.outputName {
@@ -120,9 +119,9 @@ struct LibrarySheet: View {
         } else if let output = recorder.outputName {
             lines.append("Now: playing through \(output).")
         }
-        lines.append("With nothing plugged in, Tapes records the built-in microphone and plays through the speaker. Plug in a USB instrument and it records that instead.")
-        lines.append("iOS sends an instrument's sound out through the instrument. Play back through the speaker brings it to this device between takes, so you can listen without unplugging. To hear yourself while you record, plug headphones or a speaker into the instrument and turn this off.")
-        lines.append("Hear the input is for inputs with no output of their own, such as a USB microphone.")
+        lines.append("With nothing plugged in, Tapes records the built-in microphone and plays through the speaker.")
+        lines.append("Plug in an instrument and Tapes records that instead. You hear it live, through this device or your headphones. While the tape plays, you hear the tape.")
+        lines.append("Turn Hear the input off for a microphone that sits near the speaker.")
         return lines.joined(separator: "\n")
     }
 
