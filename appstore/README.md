@@ -7,7 +7,7 @@ Character counts were checked against Apple's limits.
 
 1. **Push the repo** so the privacy and support pages go live on the site (`web/privacy.html`, `web/support.html`). App Store Connect rejects a privacy URL that does not load.
 2. **Sign in to Xcode** with the Alfajor LLC Apple ID (Xcode → Settings → Accounts). This is the one thing blocking the upload.
-3. **Build**: version 1.2, build 3 was uploaded and submitted for review on 15 November 2026. It took the place of 1.1, which was withdrawn from review the same day, so 1.2 also carries the iPhone Duo support.
+3. **Build**: version 1.2, build 4 was uploaded and submitted for review on 15 November 2026. It replaced build 3, which crashed when a take was started with an instrument plugged in and no headphones. It took the place of 1.1, which was withdrawn from review the same day, so 1.2 also carries the iPhone Duo support.
 
 ## App information
 

@@ -88,7 +88,7 @@ final class AudioIO: @unchecked Sendable {
     }
 
     /// Asks for the microphone if needed and wires it in. False if recording is not possible.
-    func ensureInput() async -> Bool {
+    @MainActor func ensureInput() async -> Bool {
         if inputReady { return true }
         guard await AVAudioApplication.requestRecordPermission() else { return false }
         engine.stop()
@@ -132,7 +132,10 @@ final class AudioIO: @unchecked Sendable {
     /// Returns false if there is no working input to record from.
     ///
     /// See `applyRouting` for where the sound goes during a take and between takes.
-    func setRecording(_ on: Bool) async -> Bool {
+    ///
+    /// On the main actor, like everything else that rebuilds the graph: the route observers run
+    /// there, and the engine must not be reconnected from two threads at once.
+    @MainActor func setRecording(_ on: Bool) async -> Bool {
         recording = on
         applyRouting()
         updateEngagement()
@@ -141,6 +144,8 @@ final class AudioIO: @unchecked Sendable {
         for _ in 0..<20 {
             if engine.isRunning, inputEngaged, inputIsAsWanted { break }
             try? await Task.sleep(for: .milliseconds(100))
+            // The input may have refused to connect while the route was still changing.
+            if !inputEngaged { updateEngagement() }
         }
         if !engine.isRunning {
             // It did not come back by itself (seen after a device is pulled out): rebuild the input side.
@@ -362,12 +367,7 @@ final class AudioIO: @unchecked Sendable {
         guard inputReady, inputWanted != inputEngaged else { return }
         engine.stop()
         if inputWanted {
-            let input = engine.inputNode
-            let format = input.outputFormat(forBus: 0)
-            if format.channelCount > 0, format.sampleRate > 0 {
-                engine.connect(input, to: inputMixer, format: format)
-                inputEngaged = true
-            }
+            inputEngaged = connectInput()
         } else {
             engine.disconnectNodeOutput(engine.inputNode)
             inputEngaged = false
@@ -397,18 +397,30 @@ final class AudioIO: @unchecked Sendable {
         suspended = false
         try? AVAudioSession.sharedInstance().setActive(true)
         restart()
-        applyRouting()
+        // Giving the session back dropped any forced speaker, so work the route out afresh.
+        applyRouting(lookingAgain: true)
     }
 
     /// Reconnects the input node in whatever format the current input device has.
     private func rewireInput() {
         guard inputReady, inputEngaged else { return }
+        engine.disconnectNodeOutput(engine.inputNode)
+        inputEngaged = connectInput()
+        updateMonitor()
+    }
+
+    /// Connects the input node in the format the hardware has now. False if it would not take:
+    /// while a route is changing the engine can still hold the last device's format, and it
+    /// raises when asked to connect in it. The next route change, or `setRecording`, tries again.
+    private func connectInput() -> Bool {
         let input = engine.inputNode
         let format = input.outputFormat(forBus: 0)
-        guard format.channelCount > 0, format.sampleRate > 0 else { return }
-        engine.disconnectNodeOutput(input)
-        engine.connect(input, to: inputMixer, format: format)
-        updateMonitor()
+        guard format.channelCount > 0, format.sampleRate > 0 else { return false }
+        if let reason = TapesReasonRaised({ engine.connect(input, to: inputMixer, format: format) }) {
+            print("Audio input would not connect: \(reason)")
+            return false
+        }
+        return true
     }
 
     private func restart() {

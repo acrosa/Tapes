@@ -71,6 +71,6 @@ microphone granted, demo tape seeded.
 ## Pending
 
 Nothing. On 15 November 2026 the 1.1 submission was withdrawn and that version became 1.2
-(build 3: iPhone Duo, cutting, hearing an instrument in headphones), with the new text and the
-fifth screenshot, and was submitted for review. It releases automatically when approved.
+(iPhone Duo, cutting, hearing an instrument in headphones), with the new text and the
+fifth screenshot, and was submitted for review. Build 4 replaced build 3 the same day (a crash on starting a take with an instrument plugged in and no headphones). It releases automatically when approved.
 Screenshots 01 to 04 predate the capital legends; retake the set when convenient.
